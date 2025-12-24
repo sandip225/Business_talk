@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Youtube, Headphones } from 'lucide-react';
+import { Youtube, Headphones, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import PodcastCard from '../components/podcast/PodcastCard';
 import { podcastAPI, Podcast } from '../services/api';
 import { usePodcastStore } from '../store/useStore';
+import logoImage from '../assets/logo.jpg';
 
 export default function Home() {
     const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading } = usePodcastStore();
@@ -27,6 +29,10 @@ export default function Home() {
         fetchPodcasts();
     }, [setPodcasts, setLoading]);
 
+    // Get top 5 upcoming and top 5 past podcasts
+    const top5Upcoming = upcomingPodcasts.slice(0, 5);
+    const top5Past = pastPodcasts.slice(0, 5);
+
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
@@ -41,9 +47,9 @@ export default function Home() {
                         {/* Logo */}
                         <div className="flex justify-center mb-4">
                             <img
-                                src="https://static.wixstatic.com/media/70d1c9_f0f4073d229d4e559e4cc6cea217ea88~mv2.png/v1/fill/w_200,h_202,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Trademarked%20Logo.png"
+                                src={logoImage}
                                 alt="Business Talk Logo"
-                                className="w-24 h-24 object-contain"
+                                className="w-32 h-32 object-contain rounded-full shadow-lg"
                             />
                         </div>
 
@@ -65,7 +71,7 @@ export default function Home() {
                         {/* Platform Icons */}
                         <div className="flex justify-center space-x-4">
                             <a
-                                href="https://youtube.com"
+                                href="https://www.youtube.com/@businesstalkwithdeepakbhatt"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
@@ -97,7 +103,7 @@ export default function Home() {
             {/* Section Divider */}
             <div className="section-divider"></div>
 
-            {/* Upcoming Podcasts Section */}
+            {/* Upcoming Podcasts Section - Top 5 */}
             <section className="py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div
@@ -106,10 +112,20 @@ export default function Home() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold heading-serif text-maroon-700 text-center mb-4">
-                            Upcoming Podcast Episodes
-                        </h2>
-                        <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-3xl md:text-4xl font-bold heading-serif text-maroon-700">
+                                Upcoming Podcast Episodes
+                            </h2>
+                            {upcomingPodcasts.length > 5 && (
+                                <Link
+                                    to="/podcasts"
+                                    className="hidden md:flex items-center text-maroon-700 hover:text-maroon-800 font-medium transition-colors"
+                                >
+                                    View All <ArrowRight className="w-4 h-4 ml-1" />
+                                </Link>
+                            )}
+                        </div>
+                        <p className="text-gray-600 mb-12 max-w-2xl">
                             Join us for these exciting upcoming conversations with world-renowned scholars and thought leaders.
                         </p>
 
@@ -123,22 +139,34 @@ export default function Home() {
                             <div className="text-center py-12">
                                 <p className="text-red-600">{error}</p>
                             </div>
-                        ) : upcomingPodcasts.length === 0 ? (
+                        ) : top5Upcoming.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-gray-500">No upcoming podcasts scheduled. Check back soon!</p>
                             </div>
                         ) : (
-                            <div className="space-y-6">
-                                {upcomingPodcasts.map((podcast) => (
-                                    <PodcastCard key={podcast._id} podcast={podcast} variant="featured" />
-                                ))}
-                            </div>
+                            <>
+                                <div className="space-y-6">
+                                    {top5Upcoming.map((podcast) => (
+                                        <PodcastCard key={podcast._id} podcast={podcast} variant="featured" />
+                                    ))}
+                                </div>
+                                {upcomingPodcasts.length > 5 && (
+                                    <div className="text-center mt-8 md:hidden">
+                                        <Link
+                                            to="/podcasts"
+                                            className="inline-flex items-center px-6 py-3 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
+                                        >
+                                            View All Upcoming <ArrowRight className="w-4 h-4 ml-2" />
+                                        </Link>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </motion.div>
                 </div>
             </section>
 
-            {/* Past Podcasts Section */}
+            {/* Past Podcasts Section - Top 5 */}
             <section className="py-16 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div
@@ -147,16 +175,26 @@ export default function Home() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold heading-serif text-maroon-700 text-center mb-4">
-                            Episode Highlights: Best of Our Previous Podcasts
-                        </h2>
-                        <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-3xl md:text-4xl font-bold heading-serif text-maroon-700">
+                                Episode Highlights: Best of Our Previous Podcasts
+                            </h2>
+                            {pastPodcasts.length > 5 && (
+                                <Link
+                                    to="/podcasts"
+                                    className="hidden md:flex items-center text-maroon-700 hover:text-maroon-800 font-medium transition-colors"
+                                >
+                                    View All <ArrowRight className="w-4 h-4 ml-1" />
+                                </Link>
+                            )}
+                        </div>
+                        <p className="text-gray-600 mb-12 max-w-2xl">
                             Explore our archive of insightful conversations with leaders in business, academia, and research.
                         </p>
 
                         {isLoading ? (
                             <div className="podcast-grid">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                                {[1, 2, 3, 4, 5].map((i) => (
                                     <div key={i} className="bg-gray-200 rounded-xl h-80 skeleton"></div>
                                 ))}
                             </div>
@@ -164,24 +202,36 @@ export default function Home() {
                             <div className="text-center py-12">
                                 <p className="text-red-600">{error}</p>
                             </div>
-                        ) : pastPodcasts.length === 0 ? (
+                        ) : top5Past.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-gray-500">No past podcasts available yet.</p>
                             </div>
                         ) : (
-                            <div className="podcast-grid">
-                                {pastPodcasts.map((podcast, index) => (
-                                    <motion.div
-                                        key={podcast._id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                                    >
-                                        <PodcastCard podcast={podcast} variant="grid" />
-                                    </motion.div>
-                                ))}
-                            </div>
+                            <>
+                                <div className="podcast-grid">
+                                    {top5Past.map((podcast, index) => (
+                                        <motion.div
+                                            key={podcast._id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                                        >
+                                            <PodcastCard podcast={podcast} variant="grid" />
+                                        </motion.div>
+                                    ))}
+                                </div>
+                                {pastPodcasts.length > 5 && (
+                                    <div className="text-center mt-8">
+                                        <Link
+                                            to="/podcasts"
+                                            className="inline-flex items-center px-6 py-3 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
+                                        >
+                                            View All Episodes <ArrowRight className="w-4 h-4 ml-2" />
+                                        </Link>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </motion.div>
                 </div>
@@ -198,7 +248,7 @@ export default function Home() {
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <a
-                            href="https://youtube.com"
+                            href="https://www.youtube.com/@businesstalkwithdeepakbhatt"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-6 py-3 bg-white text-maroon-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors"

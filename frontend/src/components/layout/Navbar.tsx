@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import logoImage from '../../assets/logo.jpg';
 
 const navLinks = [
     { name: 'HOME', path: '/' },
-    { name: 'PODCAST', path: '/', active: true },
+    { name: 'ABOUT', path: '/about' },
+    { name: 'PODCASTS', path: '/podcasts' },
     { name: 'BLOG', path: '/blog' },
     { name: 'CONTACT', path: '/contact' },
 ];
@@ -21,9 +23,9 @@ export default function Navbar() {
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-3">
                         <img
-                            src="https://static.wixstatic.com/media/70d1c9_f0f4073d229d4e559e4cc6cea217ea88~mv2.png/v1/fill/w_200,h_202,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Trademarked%20Logo.png"
+                            src={logoImage}
                             alt="Business Talk Logo"
-                            className="w-8 h-8 object-contain"
+                            className="w-10 h-10 object-contain rounded-full"
                         />
                         <span className="text-xl font-bold heading-serif text-maroon-700">
                             Business Talk
@@ -36,7 +38,7 @@ export default function Navbar() {
                             <Link
                                 key={link.name}
                                 to={link.path}
-                                className={`text-sm font-medium transition-colors duration-200 hover:text-maroon-700 ${link.active || location.pathname === link.path
+                                className={`text-sm font-medium transition-colors duration-200 hover:text-maroon-700 ${location.pathname === link.path
                                     ? 'text-maroon-700 border-b-2 border-maroon-700 pb-1'
                                     : 'text-gray-600'
                                     }`}
@@ -77,7 +79,7 @@ export default function Navbar() {
                                     key={link.name}
                                     to={link.path}
                                     onClick={() => setIsOpen(false)}
-                                    className={`block px-4 py-2 rounded-lg font-medium ${link.active || location.pathname === link.path
+                                    className={`block px-4 py-2 rounded-lg font-medium ${location.pathname === link.path
                                         ? 'bg-maroon-50 text-maroon-700'
                                         : 'text-gray-600 hover:bg-gray-50'
                                         }`}

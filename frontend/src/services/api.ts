@@ -94,6 +94,25 @@ export const podcastAPI = {
     },
 };
 
+// Blog API
+export const blogAPI = {
+    getAll: (params?: { category?: string; search?: string; page?: number; limit?: number }) =>
+        api.get('/blogs', { params }),
+
+    getById: (id: string) => api.get(`/blogs/${id}`),
+
+    getAdminAll: () => api.get('/blogs/admin/all'),
+
+    getStats: () => api.get('/blogs/admin/stats'),
+
+    create: (data: BlogInput) => api.post('/blogs', data),
+
+    update: (id: string, data: Partial<BlogInput>) =>
+        api.put(`/blogs/${id}`, data),
+
+    delete: (id: string) => api.delete(`/blogs/${id}`),
+};
+
 // Types
 export interface Podcast {
     _id: string;
@@ -138,6 +157,33 @@ export interface PodcastInput {
     thumbnailImage?: string;
     tags?: string[];
     isRescheduled?: boolean;
+}
+
+export interface Blog {
+    _id: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    author: string;
+    category: string;
+    image: string;
+    readTime: string;
+    tags: string[];
+    isPublished: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface BlogInput {
+    title: string;
+    excerpt: string;
+    content: string;
+    author?: string;
+    category: string;
+    image?: string;
+    readTime?: string;
+    tags?: string[];
+    isPublished?: boolean;
 }
 
 export interface User {

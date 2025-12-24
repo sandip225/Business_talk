@@ -1,5 +1,6 @@
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, ExternalLink, Calendar, User } from 'lucide-react';
+import { ArrowRight, ExternalLink, Calendar, User, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Sample blog posts data
@@ -69,6 +70,36 @@ const blogPosts = [
 const categories = ['All', 'Education', 'Leadership', 'Technology', 'Psychology', 'Sustainability', 'Marketing'];
 
 export default function Blog() {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
+
+    // Filter blog posts based on search and category
+    const filteredPosts = useMemo(() => {
+        let filtered = blogPosts;
+
+        // Filter by category
+        if (activeCategory !== 'All') {
+            filtered = filtered.filter(post => post.category === activeCategory);
+        }
+
+        // Filter by search term
+        if (searchTerm.trim()) {
+            const search = searchTerm.toLowerCase();
+            filtered = filtered.filter(
+                post =>
+                    post.title.toLowerCase().includes(search) ||
+                    post.excerpt.toLowerCase().includes(search) ||
+                    post.category.toLowerCase().includes(search) ||
+                    post.author.toLowerCase().includes(search)
+            );
+        }
+
+        return filtered;
+    }, [searchTerm, activeCategory]);
+
+    const featuredPost = filteredPosts[0];
+    const otherPosts = filteredPosts.slice(1);
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-cream-50 to-white">
             {/* Hero Section */}
@@ -92,6 +123,22 @@ export default function Blog() {
                 </div>
             </section>
 
+            {/* Search Section */}
+            <section className="py-6 px-4 bg-white sticky top-16 z-40 shadow-sm">
+                <div className="max-w-7xl mx-auto">
+                    <div className="relative max-w-lg mx-auto">
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search articles by title, topic, or author..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:border-maroon-500 focus:ring-2 focus:ring-maroon-200 transition-all outline-none"
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* Categories */}
             <section className="py-8 px-4 border-b border-gray-200">
                 <div className="max-w-7xl mx-auto">
@@ -102,7 +149,8 @@ export default function Blog() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${index === 0
+                                onClick={() => setActiveCategory(category)}
+                                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${activeCategory === category
                                     ? 'bg-maroon-700 text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-maroon-50 hover:text-maroon-700'
                                     }`}
@@ -114,96 +162,125 @@ export default function Blog() {
                 </div>
             </section>
 
+            {/* Results Count */}
+            {(searchTerm || activeCategory !== 'All') && (
+                <section className="py-4 px-4 bg-gray-50">
+                    <div className="max-w-7xl mx-auto">
+                        <p className="text-gray-600">
+                            Showing {filteredPosts.length} article{filteredPosts.length !== 1 ? 's' : ''}
+                            {searchTerm && ` for "${searchTerm}"`}
+                            {activeCategory !== 'All' && ` in ${activeCategory}`}
+                        </p>
+                    </div>
+                </section>
+            )}
+
             {/* Featured Post */}
-            <section className="py-16 px-4">
-                <div className="max-w-7xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="bg-white rounded-2xl shadow-xl overflow-hidden"
-                    >
-                        <div className="grid md:grid-cols-2">
-                            <div className="aspect-video md:aspect-auto">
-                                <img
-                                    src={blogPosts[0].image}
-                                    alt={blogPosts[0].title}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="p-8 md:p-12 flex flex-col justify-center">
-                                <span className="inline-block px-3 py-1 bg-maroon-100 text-maroon-700 text-sm font-medium rounded-full mb-4 w-fit">
-                                    Featured
-                                </span>
-                                <h2 className="text-3xl font-bold text-gray-900 mb-4 heading-serif">
-                                    {blogPosts[0].title}
-                                </h2>
-                                <p className="text-gray-600 mb-6 leading-relaxed">
-                                    {blogPosts[0].excerpt}
-                                </p>
-                                <div className="flex items-center text-sm text-gray-500 mb-6">
-                                    <User className="w-4 h-4 mr-2" />
-                                    <span>{blogPosts[0].author}</span>
-                                    <span className="mx-3">•</span>
-                                    <Calendar className="w-4 h-4 mr-2" />
-                                    <span>{blogPosts[0].date}</span>
-                                    <span className="mx-3">•</span>
-                                    <span>{blogPosts[0].readTime}</span>
+            {featuredPost && (
+                <section className="py-16 px-4">
+                    <div className="max-w-7xl mx-auto">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                        >
+                            <div className="grid md:grid-cols-2">
+                                <div className="aspect-video md:aspect-auto">
+                                    <img
+                                        src={featuredPost.image}
+                                        alt={featuredPost.title}
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
-                                <Link
-                                    to={`/blog/${blogPosts[0].id}`}
-                                    className="inline-flex items-center text-maroon-700 font-semibold hover:text-maroon-800 transition-colors group"
-                                >
-                                    Read Full Article
-                                    <ArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" />
-                                </Link>
+                                <div className="p-8 md:p-12 flex flex-col justify-center">
+                                    <span className="inline-block px-3 py-1 bg-maroon-100 text-maroon-700 text-sm font-medium rounded-full mb-4 w-fit">
+                                        Featured
+                                    </span>
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-4 heading-serif">
+                                        {featuredPost.title}
+                                    </h2>
+                                    <p className="text-gray-600 mb-6 leading-relaxed">
+                                        {featuredPost.excerpt}
+                                    </p>
+                                    <div className="flex items-center text-sm text-gray-500 mb-6">
+                                        <User className="w-4 h-4 mr-2" />
+                                        <span>{featuredPost.author}</span>
+                                        <span className="mx-3">•</span>
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        <span>{featuredPost.date}</span>
+                                        <span className="mx-3">•</span>
+                                        <span>{featuredPost.readTime}</span>
+                                    </div>
+                                    <Link
+                                        to={`/blog/${featuredPost.id}`}
+                                        className="inline-flex items-center text-maroon-700 font-semibold hover:text-maroon-800 transition-colors group"
+                                    >
+                                        Read Full Article
+                                        <ArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
+                        </motion.div>
+                    </div>
+                </section>
+            )}
 
             {/* Blog Grid */}
             <section className="py-16 px-4 bg-gray-50">
                 <div className="max-w-7xl mx-auto">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-12 heading-serif text-center">
-                        Latest Articles
-                    </h2>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {blogPosts.slice(1).map((post, index) => (
-                            <Link to={`/blog/${post.id}`} key={post.id}>
-                                <motion.article
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer h-full"
-                                >
-                                    <div className="aspect-video overflow-hidden">
-                                        <img
-                                            src={post.image}
-                                            alt={post.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="p-6">
-                                        <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full mb-3">
-                                            {post.category}
-                                        </span>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-maroon-700 transition-colors">
-                                            {post.title}
-                                        </h3>
-                                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                                            {post.excerpt}
-                                        </p>
-                                        <div className="flex items-center justify-between text-sm text-gray-500">
-                                            <span>{post.date}</span>
-                                            <span>{post.readTime}</span>
-                                        </div>
-                                    </div>
-                                </motion.article>
-                            </Link>
-                        ))}
-                    </div>
+                    {filteredPosts.length === 0 ? (
+                        <div className="text-center py-16">
+                            <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-700 mb-2">No articles found</h3>
+                            <p className="text-gray-500">
+                                {searchTerm
+                                    ? `No results for "${searchTerm}". Try a different search term.`
+                                    : 'No articles available in this category.'}
+                            </p>
+                        </div>
+                    ) : otherPosts.length > 0 && (
+                        <>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-12 heading-serif text-center">
+                                Latest Articles
+                            </h2>
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {otherPosts.map((post, index) => (
+                                    <Link to={`/blog/${post.id}`} key={post.id}>
+                                        <motion.article
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer h-full"
+                                        >
+                                            <div className="aspect-video overflow-hidden">
+                                                <img
+                                                    src={post.image}
+                                                    alt={post.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            </div>
+                                            <div className="p-6">
+                                                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full mb-3">
+                                                    {post.category}
+                                                </span>
+                                                <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-maroon-700 transition-colors">
+                                                    {post.title}
+                                                </h3>
+                                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                                    {post.excerpt}
+                                                </p>
+                                                <div className="flex items-center justify-between text-sm text-gray-500">
+                                                    <span>{post.date}</span>
+                                                    <span>{post.readTime}</span>
+                                                </div>
+                                            </div>
+                                        </motion.article>
+                                    </Link>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             </section>
 

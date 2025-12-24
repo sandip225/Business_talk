@@ -9,6 +9,7 @@ import { config } from './config/env.js';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import podcastRoutes from './routes/podcast.routes.js';
+import blogRoutes from './routes/blog.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,7 @@ app.use(helmet({
 
 // CORS
 app.use(cors({
-    origin: [config.cors.frontendUrl, 'http://localhost:5173', 'http://localhost:3000'],
+    origin: [config.cors.frontendUrl, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
     credentials: true,
 }));
 
@@ -47,6 +48,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/podcasts', podcastRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
