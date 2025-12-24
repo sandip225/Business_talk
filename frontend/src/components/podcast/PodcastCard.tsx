@@ -22,28 +22,31 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
 
     const youtubeId = extractYoutubeId(podcast.youtubeUrl);
 
-    // Check if guestImage is a valid URL (not a default/placeholder)
-    const isValidGuestImage = (url?: string) => {
-        if (!url) return false;
-        if (url === '/default-avatar.png' || url === '/uploads/default-avatar.png') return false;
-        if (url.startsWith('http://') || url.startsWith('https://')) return true;
-        return false;
-    };
-
-    // Determine thumbnail URL - custom thumbnail takes priority, then guestImage, then YouTube thumbnail
+    // Get thumbnail URL - simplified and more reliable
     const getThumbnailUrl = () => {
-        // First priority: explicit thumbnailImage
-        if (podcast.thumbnailImage && podcast.thumbnailImage.startsWith('http')) {
-            return podcast.thumbnailImage;
+        // First: Check for explicit thumbnailImage
+        if (podcast.thumbnailImage) {
+            // Accept any URL that looks valid
+            if (podcast.thumbnailImage.startsWith('http://') || podcast.thumbnailImage.startsWith('https://')) {
+                return podcast.thumbnailImage;
+            }
         }
-        // Second priority: valid guestImage URL (for upcoming episodes especially)
-        if (isValidGuestImage(podcast.guestImage)) {
-            return podcast.guestImage;
+        
+        // Second: Check for guestImage (valid URL)
+        if (podcast.guestImage) {
+            if (podcast.guestImage.startsWith('http://') || podcast.guestImage.startsWith('https://')) {
+                // Skip obvious placeholder URLs
+                if (!podcast.guestImage.includes('default-avatar') && !podcast.guestImage.includes('placeholder')) {
+                    return podcast.guestImage;
+                }
+            }
         }
-        // Third priority: YouTube thumbnail
+        
+        // Third: Try YouTube thumbnail
         if (youtubeId) {
             return `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
         }
+        
         return null;
     };
 
