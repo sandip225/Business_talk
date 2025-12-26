@@ -25,7 +25,7 @@ export default function Navbar() {
                         <img
                             src={logoImage}
                             alt="Business Talk Logo"
-                            className="w-12 h-12 object-contain rounded-full"
+                            className="w-14 h-14 object-contain rounded-full"
                         />
                     </Link>
 

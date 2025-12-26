@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Calendar, Clock, Youtube, User, Play } from 'lucide-react';
+import { Search, Filter, Calendar, Youtube, Play, User } from 'lucide-react';
 import { podcastAPI, Podcast } from '../services/api';
 import { usePodcastStore } from '../store/useStore';
 
@@ -65,95 +65,6 @@ export default function Podcasts() {
             return `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
         }
         return null;
-    };
-
-    // Upcoming Episode Card
-    const UpcomingCard = ({ podcast, index }: { podcast: Podcast; index: number }) => {
-        const thumbnailUrl = getThumbnailUrl(podcast);
-        const formattedDate = new Date(podcast.scheduledDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-
-        return (
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300"
-            >
-                <div className="flex flex-col md:flex-row">
-                    {/* Thumbnail */}
-                    <div className="md:w-72 h-48 md:h-auto relative bg-gradient-to-br from-maroon-100 to-maroon-200 flex-shrink-0">
-                        {thumbnailUrl ? (
-                            <img
-                                src={thumbnailUrl}
-                                alt={podcast.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <div className="w-20 h-20 rounded-full bg-maroon-300/50 flex items-center justify-center">
-                                    <svg className="w-10 h-10 text-maroon-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                                        <line x1="12" y1="19" x2="12" y2="22" />
-                                    </svg>
-                                </div>
-                            </div>
-                        )}
-                        <div className="absolute top-3 left-3 px-3 py-1 bg-maroon-700 text-white text-xs font-bold rounded-full">
-                            EP #{podcast.episodeNumber}
-                        </div>
-                        <div className="absolute top-3 right-3 px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
-                            UPCOMING
-                        </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 hover:text-maroon-700 transition-colors">
-                            {podcast.title}
-                        </h3>
-
-                        {/* Guest Info */}
-                        <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                                {podcast.guestImage && podcast.guestImage.startsWith('http') ? (
-                                    <img src={podcast.guestImage} alt={podcast.guestName} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400">
-                                        <User className="w-6 h-6 text-gray-500" />
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <div className="font-semibold text-gray-900">{podcast.guestName}</div>
-                                <div className="text-sm text-gray-500">{podcast.guestTitle}</div>
-                            </div>
-                        </div>
-
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{podcast.description}</p>
-
-                        {/* Date & Time */}
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            <span className="flex items-center">
-                                <Calendar className="w-4 h-4 mr-1 text-maroon-600" />
-                                {formattedDate}
-                            </span>
-                            <span className="flex items-center">
-                                <Clock className="w-4 h-4 mr-1 text-maroon-600" />
-                                {podcast.scheduledTime}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-        );
     };
 
     // Past Episode Card
@@ -310,37 +221,6 @@ export default function Podcasts() {
                 </div>
             ) : (
                 <>
-                    {/* Upcoming Episodes Section */}
-                    {filteredUpcoming.length > 0 && (
-                        <section className="py-12 px-4">
-                            <div className="max-w-7xl mx-auto">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div>
-                                        <h2 className="text-3xl font-bold text-gray-900">
-                                            Upcoming <span className="text-maroon-700">Episodes</span>
-                                        </h2>
-                                        <p className="text-gray-600 mt-1">Don't miss our upcoming conversations</p>
-                                    </div>
-                                    <span className="px-4 py-2 bg-green-100 text-green-700 font-semibold rounded-full text-sm">
-                                        {filteredUpcoming.length} Upcoming
-                                    </span>
-                                </div>
-                                <div className="space-y-6">
-                                    {filteredUpcoming.map((podcast, index) => (
-                                        <UpcomingCard key={podcast._id} podcast={podcast} index={index} />
-                                    ))}
-                                </div>
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Divider */}
-                    {filteredUpcoming.length > 0 && filteredPast.length > 0 && (
-                        <div className="max-w-7xl mx-auto px-4">
-                            <hr className="border-gray-200" />
-                        </div>
-                    )}
-
                     {/* Past Episodes Section */}
                     {filteredPast.length > 0 && (
                         <section className="py-12 px-4 bg-gray-50">
