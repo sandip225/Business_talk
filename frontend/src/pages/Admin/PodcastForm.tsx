@@ -429,6 +429,28 @@ export default function PodcastForm() {
                                         placeholder="https://music.amazon.com/..."
                                     />
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Audible URL
+                                    </label>
+                                    <input
+                                        {...register('audibleUrl')}
+                                        className="input-field"
+                                        placeholder="https://www.audible.in/podcast/..."
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        SoundCloud URL
+                                    </label>
+                                    <input
+                                        {...register('soundcloudUrl')}
+                                        className="input-field"
+                                        placeholder="https://soundcloud.com/business_talk/..."
+                                    />
+                                </div>
                             </div>
                         </div>
 

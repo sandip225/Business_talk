@@ -134,6 +134,7 @@ export interface Podcast {
     spotifyUrl?: string;
     applePodcastUrl?: string;
     amazonMusicUrl?: string;
+    audibleUrl?: string;
     soundcloudUrl?: string;
     thumbnailImage?: string;
     tags: string[];
@@ -157,6 +158,7 @@ export interface PodcastInput {
     spotifyUrl?: string;
     applePodcastUrl?: string;
     amazonMusicUrl?: string;
+    audibleUrl?: string;
     soundcloudUrl?: string;
     thumbnailImage?: string;
     tags?: string[];

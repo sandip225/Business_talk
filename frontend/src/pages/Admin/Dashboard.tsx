@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import logoImage from '../../assets/logo.jpg';
 import {
     Mic,
     Plus,
@@ -146,7 +147,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center space-x-3">
                             <img
-                                src="/assets/logo.jpg"
+                                src={logoImage}
                                 alt="Business Talk Logo"
                                 className="h-10 w-auto"
                                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=Business+Talk&size=200&background=8B1538&color=fff&bold=true'; }}

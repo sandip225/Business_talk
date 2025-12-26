@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mic, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authAPI } from '../../services/api';
 import { useAuthStore } from '../../store/useStore';
+import logoImage from '../../assets/logo.jpg';
 
 export default function AdminLogin() {
     const navigate = useNavigate();
@@ -42,16 +43,20 @@ export default function AdminLogin() {
                 className="w-full max-w-md"
             >
                 <div className="bg-white rounded-2xl shadow-xl p-8">
-                    {/* Logo */}
+                    {/* Logo - Business Talk logo instead of mic icon */}
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-maroon-700 rounded-full mb-4">
-                            <Mic className="w-8 h-8 text-white" />
+                        <div className="flex justify-center mb-4">
+                            <img
+                                src={logoImage}
+                                alt="Business Talk Logo"
+                                className="w-20 h-20 object-contain rounded-full shadow-md"
+                            />
                         </div>
-                        <h1 className="text-2xl font-bold heading-serif text-gray-900">
+                        <h1 className="text-2xl font-bold text-gray-900">
                             Admin Login
                         </h1>
                         <p className="text-gray-500 mt-2">
-                            Sign in to manage Business Talk podcasts
+                            Log in to manage and update Business Talk podcasts.
                         </p>
                     </div>
 

@@ -1,12 +1,11 @@
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Send, Youtube, Linkedin, Twitter, Globe } from 'lucide-react';
+import { Mail, MapPin, Send, Globe } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Contact() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        subject: '',
         message: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,21 +20,20 @@ export default function Contact() {
 
         setIsSubmitting(false);
         setSubmitted(true);
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        setFormData({ name: '', email: '', message: '' });
 
         // Reset success message after 5 seconds
         setTimeout(() => setSubmitted(false), 5000);
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-cream-50 to-white">
+        <div className="min-h-screen bg-white">
             {/* Hero Section */}
-            <section className="relative py-20 px-4 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-maroon-900/5 to-transparent" />
+            <section className="relative py-20 px-4 overflow-hidden bg-white">
                 <div className="max-w-7xl mx-auto relative">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -43,19 +41,18 @@ export default function Contact() {
                         transition={{ duration: 0.6 }}
                         className="text-center"
                     >
-                        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 heading-serif">
+                        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                             Get in <span className="text-maroon-700">Touch</span>
                         </h1>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                            Have a question, want to be a guest on our podcast, or interested in collaboration?
-                            We'd love to hear from you.
+                        <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+                            Questions or feedback? We're here to listen.
                         </p>
                     </motion.div>
                 </div>
             </section>
 
             {/* Contact Content */}
-            <section className="py-16 px-4">
+            <section className="py-16 px-4 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid lg:grid-cols-2 gap-12">
                         {/* Contact Info */}
@@ -66,13 +63,12 @@ export default function Contact() {
                             className="space-y-8"
                         >
                             <div>
-                                <h2 className="text-3xl font-bold text-gray-900 mb-6 heading-serif">
+                                <h2 className="text-3xl font-bold text-gray-900 mb-6">
                                     Let's Connect
                                 </h2>
-                                <p className="text-gray-600 leading-relaxed mb-8">
-                                    Business Talk brings together thought leaders, academics, and industry experts
-                                    for meaningful conversations. Whether you're interested in being a guest,
-                                    have feedback, or want to explore partnership opportunities, reach out to us.
+                                <p className="text-gray-700 leading-relaxed mb-8">
+                                    Business Talk brings together thought leaders in academia and research scholars
+                                    for meaningful conversations. Have something to ask or share? We'd love to hear from you.
                                 </p>
                             </div>
 
@@ -84,8 +80,7 @@ export default function Contact() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 mb-1">Email Us</h3>
-                                        <p className="text-gray-600">contact@businesstalk.com</p>
-                                        <p className="text-gray-600">deepak@deepakbbhatt.com</p>
+                                        <p className="text-gray-700">hellomrbhatt@gmail.com</p>
                                     </div>
                                 </div>
 
@@ -112,61 +107,20 @@ export default function Contact() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
-                                        <p className="text-gray-600">Global - Virtual Studio</p>
+                                        <p className="text-gray-700">Ahmedabad, Gujarat (India)</p>
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Social Links */}
-                            <div className="pt-8 border-t border-gray-200">
-                                <h3 className="font-semibold text-gray-900 mb-4">Follow Us</h3>
-                                <div className="flex space-x-4">
-                                    <a
-                                        href="https://www.youtube.com/@businesstalkwithdeepakbhatt"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-12 h-12 bg-red-600 text-white rounded-lg flex items-center justify-center hover:bg-red-700 transition-colors"
-                                    >
-                                        <Youtube className="w-6 h-6" />
-                                    </a>
-                                    <a
-                                        href="https://linkedin.com"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
-                                    >
-                                        <Linkedin className="w-6 h-6" />
-                                    </a>
-                                    <a
-                                        href="https://twitter.com"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-12 h-12 bg-sky-500 text-white rounded-lg flex items-center justify-center hover:bg-sky-600 transition-colors"
-                                    >
-                                        <Twitter className="w-6 h-6" />
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* Guest Pitch Box */}
-                            <div className="bg-gradient-to-br from-maroon-50 to-maroon-100 rounded-xl p-6 mt-8">
-                                <h3 className="font-bold text-maroon-900 mb-3">Want to Be a Guest?</h3>
-                                <p className="text-maroon-700 text-sm leading-relaxed">
-                                    We're always looking for thought leaders, researchers, and industry experts
-                                    to share their insights on Business Talk. If you have expertise in business,
-                                    technology, leadership, or academia, we'd love to hear from you!
-                                </p>
-                            </div>
                         </motion.div>
 
-                        {/* Contact Form */}
+                        {/* Contact Form - No Subject field */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
                         >
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-6 heading-serif">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6">
                                     Send a Message
                                 </h2>
 
@@ -214,26 +168,6 @@ export default function Contact() {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Subject *
-                                        </label>
-                                        <select
-                                            name="subject"
-                                            value={formData.subject}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent transition-all"
-                                        >
-                                            <option value="">Select a subject</option>
-                                            <option value="guest">Guest Inquiry</option>
-                                            <option value="partnership">Partnership Opportunity</option>
-                                            <option value="feedback">Feedback</option>
-                                            <option value="sponsorship">Sponsorship</option>
-                                            <option value="other">Other</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Message *
                                         </label>
                                         <textarea
@@ -267,47 +201,6 @@ export default function Contact() {
                                 </form>
                             </div>
                         </motion.div>
-                    </div>
-                </div>
-            </section>
-
-            {/* FAQ Section */}
-            <section className="py-16 px-4 bg-gray-50">
-                <div className="max-w-4xl mx-auto">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-12 heading-serif text-center">
-                        Frequently Asked Questions
-                    </h2>
-                    <div className="space-y-6">
-                        {[
-                            {
-                                q: 'How can I become a guest on Business Talk?',
-                                a: 'Send us a message through our contact form with the subject "Guest Inquiry". Include your background, expertise, and potential topics you can discuss. Our team reviews all submissions and will reach out if there\'s a fit.',
-                            },
-                            {
-                                q: 'Where can I watch or listen to the podcast?',
-                                a: 'Business Talk is available on YouTube, Spotify, Apple Podcasts, and Amazon Music. You can also find all episodes on our main website.',
-                            },
-                            {
-                                q: 'Do you accept sponsorships?',
-                                a: 'Yes, we partner with brands that align with our mission of bringing valuable business insights to our audience. Contact us with the subject "Sponsorship" for more information.',
-                            },
-                            {
-                                q: 'How often are new episodes released?',
-                                a: 'We release new episodes weekly, typically on Wednesdays. Subscribe to our newsletter or YouTube channel to get notified about new releases.',
-                            },
-                        ].map((faq, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 10 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: index * 0.1 }}
-                                className="bg-white rounded-xl p-6 shadow-md"
-                            >
-                                <h3 className="font-bold text-gray-900 mb-2">{faq.q}</h3>
-                                <p className="text-gray-600">{faq.a}</p>
-                            </motion.div>
-                        ))}
                     </div>
                 </div>
             </section>

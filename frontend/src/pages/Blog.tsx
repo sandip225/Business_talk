@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, ExternalLink, Calendar, User, Search } from 'lucide-react';
+import { ArrowRight, Calendar, User, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Sample blog posts data
@@ -101,10 +101,9 @@ export default function Blog() {
     const otherPosts = filteredPosts.slice(1);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-cream-50 to-white">
+        <div className="min-h-screen bg-white">
             {/* Hero Section */}
-            <section className="relative py-20 px-4 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-maroon-900/5 to-transparent" />
+            <section className="relative py-20 px-4 overflow-hidden bg-white">
                 <div className="max-w-7xl mx-auto relative">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -112,12 +111,11 @@ export default function Blog() {
                         transition={{ duration: 0.6 }}
                         className="text-center"
                     >
-                        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 heading-serif">
+                        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                             Business Talk <span className="text-maroon-700">Blog</span>
                         </h1>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                            Insights, analysis, and thought leadership from our conversations with
-                            world-class academics and business leaders.
+                        <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+                            Gain valuable insights and thought leadership from our dialogues with leading academics and research scholars.
                         </p>
                     </motion.div>
                 </div>
@@ -140,7 +138,7 @@ export default function Blog() {
             </section>
 
             {/* Categories */}
-            <section className="py-8 px-4 border-b border-gray-200">
+            <section className="py-8 px-4 border-b border-gray-200 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-wrap justify-center gap-3">
                         {categories.map((category, index) => (
@@ -177,13 +175,13 @@ export default function Blog() {
 
             {/* Featured Post */}
             {featuredPost && (
-                <section className="py-16 px-4">
+                <section className="py-16 px-4 bg-white">
                     <div className="max-w-7xl mx-auto">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
-                            className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                            className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100"
                         >
                             <div className="grid md:grid-cols-2">
                                 <div className="aspect-video md:aspect-auto">
@@ -197,7 +195,7 @@ export default function Blog() {
                                     <span className="inline-block px-3 py-1 bg-maroon-100 text-maroon-700 text-sm font-medium rounded-full mb-4 w-fit">
                                         Featured
                                     </span>
-                                    <h2 className="text-3xl font-bold text-gray-900 mb-4 heading-serif">
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
                                         {featuredPost.title}
                                     </h2>
                                     <p className="text-gray-600 mb-6 leading-relaxed">
@@ -226,7 +224,7 @@ export default function Blog() {
                 </section>
             )}
 
-            {/* Blog Grid */}
+            {/* Blog Grid - Title changed to "Latest Insights" */}
             <section className="py-16 px-4 bg-gray-50">
                 <div className="max-w-7xl mx-auto">
                     {filteredPosts.length === 0 ? (
@@ -241,8 +239,8 @@ export default function Blog() {
                         </div>
                     ) : otherPosts.length > 0 && (
                         <>
-                            <h2 className="text-3xl font-bold text-gray-900 mb-12 heading-serif text-center">
-                                Latest Articles
+                            <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">
+                                Latest Insights
                             </h2>
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {otherPosts.map((post, index) => (
@@ -251,7 +249,7 @@ export default function Blog() {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer h-full"
+                                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer h-full border border-gray-100"
                                         >
                                             <div className="aspect-video overflow-hidden">
                                                 <img
@@ -284,7 +282,7 @@ export default function Blog() {
                 </div>
             </section>
 
-            {/* Newsletter CTA */}
+            {/* Newsletter CTA - Updated text */}
             <section className="py-20 px-4 bg-maroon-900 text-white">
                 <div className="max-w-4xl mx-auto text-center">
                     <motion.div
@@ -293,11 +291,11 @@ export default function Blog() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold mb-6 heading-serif">
-                            Stay Updated with Business Talk
+                        <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                            Join Our Newsletter
                         </h2>
                         <p className="text-maroon-100 mb-8 text-lg">
-                            Subscribe to our newsletter for the latest insights, podcast episodes, and exclusive content.
+                            Join our newsletter to receive fresh insights, new podcast releases, and exclusive updates.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
                             <input
@@ -310,35 +308,6 @@ export default function Blog() {
                             </button>
                         </div>
                     </motion.div>
-                </div>
-            </section>
-
-            {/* External Links */}
-            <section className="py-16 px-4">
-                <div className="max-w-7xl mx-auto text-center">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-8 heading-serif">
-                        Explore More Content
-                    </h3>
-                    <div className="flex flex-wrap justify-center gap-4">
-                        <a
-                            href="https://www.youtube.com/@businesstalkwithdeepakbhatt"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                            <ExternalLink className="w-5 h-5 mr-2" />
-                            YouTube Channel
-                        </a>
-                        <a
-                            href="https://www.deepakbbhatt.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
-                        >
-                            <ExternalLink className="w-5 h-5 mr-2" />
-                            Main Website
-                        </a>
-                    </div>
                 </div>
             </section>
         </div>

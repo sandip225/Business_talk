@@ -17,22 +17,19 @@ export default function Navbar() {
     const location = useLocation();
 
     return (
-        <nav className="sticky top-0 z-50 glass shadow-sm">
+        <nav className="sticky top-0 z-50 bg-white shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    {/* Logo */}
+                    {/* Logo - larger size */}
                     <Link to="/" className="flex items-center space-x-3">
                         <img
                             src={logoImage}
                             alt="Business Talk Logo"
-                            className="w-10 h-10 object-contain rounded-full"
+                            className="w-12 h-12 object-contain rounded-full"
                         />
-                        <span className="text-xl font-bold heading-serif text-maroon-700">
-                            Business Talk
-                        </span>
                     </Link>
 
-                    {/* Desktop Navigation */}
+                    {/* Desktop Navigation - dark black text, no Admin Login */}
                     <div className="hidden md:flex items-center space-x-8">
                         {navLinks.map((link) => (
                             <Link
@@ -40,31 +37,25 @@ export default function Navbar() {
                                 to={link.path}
                                 className={`text-sm font-medium transition-colors duration-200 hover:text-maroon-700 ${location.pathname === link.path
                                     ? 'text-maroon-700 border-b-2 border-maroon-700 pb-1'
-                                    : 'text-gray-600'
+                                    : 'text-gray-900'
                                     }`}
                             >
                                 {link.name}
                             </Link>
                         ))}
-                        <Link
-                            to="/admin/login"
-                            className="px-4 py-2 text-sm font-medium text-white bg-maroon-700 rounded-lg hover:bg-maroon-800 transition-colors"
-                        >
-                            Admin Login
-                        </Link>
                     </div>
 
                     {/* Mobile Menu Button */}
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                        className="md:hidden p-2 rounded-lg text-gray-900 hover:bg-gray-100"
                     >
                         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Navigation */}
+            {/* Mobile Navigation - no Admin Login */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -81,19 +72,12 @@ export default function Navbar() {
                                     onClick={() => setIsOpen(false)}
                                     className={`block px-4 py-2 rounded-lg font-medium ${location.pathname === link.path
                                         ? 'bg-maroon-50 text-maroon-700'
-                                        : 'text-gray-600 hover:bg-gray-50'
+                                        : 'text-gray-900 hover:bg-gray-50'
                                         }`}
                                 >
                                     {link.name}
                                 </Link>
                             ))}
-                            <Link
-                                to="/admin/login"
-                                onClick={() => setIsOpen(false)}
-                                className="block px-4 py-2 text-center font-medium text-white bg-maroon-700 rounded-lg hover:bg-maroon-800"
-                            >
-                                Admin Login
-                            </Link>
                         </div>
                     </motion.div>
                 )}
