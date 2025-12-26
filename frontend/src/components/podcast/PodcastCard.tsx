@@ -25,10 +25,13 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
     // Get thumbnail URL - simplified: use any available image
     const getThumbnailUrl = () => {
         // Priority: thumbnailImage > guestImage > YouTube thumbnail
-        if (podcast.thumbnailImage && podcast.thumbnailImage.trim() !== '' && podcast.thumbnailImage.startsWith('http')) {
+        // Accept both http URLs and local /uploads/ paths
+        if (podcast.thumbnailImage && podcast.thumbnailImage.trim() !== '' &&
+            (podcast.thumbnailImage.startsWith('http') || podcast.thumbnailImage.startsWith('/uploads/'))) {
             return podcast.thumbnailImage;
         }
-        if (podcast.guestImage && podcast.guestImage.trim() !== '' && podcast.guestImage.startsWith('http')) {
+        if (podcast.guestImage && podcast.guestImage.trim() !== '' &&
+            (podcast.guestImage.startsWith('http') || podcast.guestImage.startsWith('/uploads/'))) {
             return podcast.guestImage;
         }
         if (youtubeId) {

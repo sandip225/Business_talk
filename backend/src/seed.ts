@@ -24,21 +24,7 @@ const seedData = async () => {
 
         // Create sample podcasts
         const samplePodcasts = [
-            // Upcoming podcasts - with proper promotional images from reliable sources
-            {
-                title: 'Leadership Lessons from the Edge: Insights on Leading in Crisis',
-                description: 'Research insights on leadership during times of uncertainty and how leaders can navigate through complex challenges.',
-                category: 'upcoming',
-                guestName: 'Dr. Michael Useem',
-                guestTitle: 'William and Jacalyn Egan Professor of Management, Director, Wharton Center for Leadership and Change Management',
-                guestInstitution: 'The Wharton School, University of Pennsylvania',
-                guestImage: 'https://mgmt.wharton.upenn.edu/wp-content/uploads/2012/04/Useem-Michael-2022.jpg',
-                thumbnailImage: 'https://mgmt.wharton.upenn.edu/wp-content/uploads/2012/04/Useem-Michael-2022.jpg',
-                episodeNumber: 310,
-                scheduledDate: new Date('2026-01-06'),
-                scheduledTime: '10:00 PM IST',
-                tags: ['leadership', 'crisis management', 'organizational behavior'],
-            },
+            // Upcoming podcasts - with promotional images stored locally
             {
                 title: 'Seeing Beyond the Here and Now: How Corporate Purpose Combats Corporate Myopia',
                 description: 'Research insights on how corporate purpose helps companies look beyond short-term pressures and embrace long-term sustainability.',
@@ -46,8 +32,8 @@ const seedData = async () => {
                 guestName: 'Dr. Tima Bansal',
                 guestTitle: 'Professor of Sustainability & Strategy, Canada Research Chair in Business Sustainability',
                 guestInstitution: 'Ivey Business School, Western University',
-                guestImage: 'https://www.ivey.uwo.ca/cmsmedia/3783641/tima-bansal.jpg',
-                thumbnailImage: 'https://www.ivey.uwo.ca/cmsmedia/3783641/tima-bansal.jpg',
+                guestImage: '/uploads/ep309-tima-bansal-promo.jpg',
+                thumbnailImage: '/uploads/ep309-tima-bansal-promo.jpg',
                 episodeNumber: 309,
                 scheduledDate: new Date('2025-12-22'),
                 scheduledTime: '10:00 PM IST',
@@ -60,8 +46,8 @@ const seedData = async () => {
                 guestName: 'Dr. Andrew Bernstein',
                 guestTitle: 'Professor of History, Specialty: Japanese History & Environmental History',
                 guestInstitution: 'Lewis & Clark College',
-                guestImage: 'https://college.lclark.edu/live/image/gid/8/width/480/src_region/0,0,3024,4032/9604_andrew_bernstein.jpg',
-                thumbnailImage: 'https://college.lclark.edu/live/image/gid/8/width/480/src_region/0,0,3024,4032/9604_andrew_bernstein.jpg',
+                guestImage: '/uploads/ep277-andrew-bernstein-promo.jpg',
+                thumbnailImage: '/uploads/ep277-andrew-bernstein-promo.jpg',
                 episodeNumber: 277,
                 scheduledDate: new Date('2026-01-05'),
                 scheduledTime: '10:00 PM IST',
@@ -74,8 +60,8 @@ const seedData = async () => {
                 guestName: 'Dr. Amir Grinstein',
                 guestTitle: 'Patrick F. & Helen C. Walsh Research Professor, Thomas E. Moore Faculty Fellow, Marketing',
                 guestInstitution: "Northeastern University's D'Amore-McKim School of Business",
-                guestImage: 'https://damore-mckim.northeastern.edu/wp-content/uploads/2021/09/Grinstein-Amir-768x768.jpg',
-                thumbnailImage: 'https://damore-mckim.northeastern.edu/wp-content/uploads/2021/09/Grinstein-Amir-768x768.jpg',
+                guestImage: '/uploads/ep303-amir-grinstein-promo.jpg',
+                thumbnailImage: '/uploads/ep303-amir-grinstein-promo.jpg',
                 episodeNumber: 303,
                 scheduledDate: new Date('2026-01-05'),
                 scheduledTime: '11:30 PM IST',
@@ -83,7 +69,7 @@ const seedData = async () => {
             },
             // Past podcasts
             {
-                title: 'Creativity in the Age of AI: Prof. Jerry Wind\'s Toolkit for the Modern Mind',
+                title: "Creativity in the Age of AI: Prof. Jerry Wind's Toolkit for the Modern Mind",
                 description: 'Learn how to leverage AI tools while maintaining human creativity.',
                 category: 'past',
                 guestName: 'Prof. Jerry Wind',
