@@ -334,7 +334,7 @@ export const deletePodcast = async (req: AuthRequest, res: Response): Promise<vo
     }
 };
 
-// Upload image
+// Upload image - uses Cloudinary if configured, local storage as fallback
 export const uploadImage = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         if (!req.file) {
@@ -342,7 +342,31 @@ export const uploadImage = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
 
-        const imageUrl = `/uploads/${req.file.filename}`;
+        let imageUrl: string;
+
+        // Try Cloudinary first if configured
+        const { isCloudinaryConfigured, uploadBufferToCloudinary } = await import('../config/cloudinary');
+
+        if (isCloudinaryConfigured()) {
+            try {
+                // Read the file and upload to Cloudinary
+                const fs = await import('fs');
+                const fileBuffer = fs.readFileSync(req.file.path);
+                imageUrl = await uploadBufferToCloudinary(fileBuffer, req.file.filename);
+
+                // Delete the local file after uploading to Cloudinary
+                fs.unlinkSync(req.file.path);
+                console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+            } catch (cloudinaryError) {
+                console.warn('⚠️ Cloudinary upload failed, using local storage:', cloudinaryError);
+                imageUrl = `/uploads/${req.file.filename}`;
+            }
+        } else {
+            // Use local storage (won't persist on Render free tier)
+            imageUrl = `/uploads/${req.file.filename}`;
+            console.log('ℹ️ Using local storage for image (Cloudinary not configured)');
+        }
+
         res.json({
             message: 'Image uploaded successfully',
             imageUrl,
