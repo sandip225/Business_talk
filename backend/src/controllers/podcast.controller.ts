@@ -272,14 +272,30 @@ export const createPodcast = async (req: AuthRequest, res: Response): Promise<vo
             return;
         }
 
+        // Log data size for debugging
+        const dataSize = JSON.stringify(req.body).length;
+        console.log(`📦 Creating podcast, data size: ${Math.round(dataSize / 1024)}KB`);
+
+        // Check if data is too large (MongoDB limit is 16MB, but we should stay well under)
+        if (dataSize > 10 * 1024 * 1024) { // 10MB limit
+            console.error('❌ Podcast data too large:', dataSize);
+            res.status(413).json({ message: 'Podcast data too large. Please use smaller images.' });
+            return;
+        }
+
         const podcast = await Podcast.create(req.body);
+        console.log(`✅ Podcast created: ${podcast.title}`);
         res.status(201).json({
             message: 'Podcast created successfully',
             podcast,
         });
-    } catch (error) {
-        console.error('Create podcast error:', error);
-        res.status(500).json({ message: 'Server error creating podcast' });
+    } catch (error: any) {
+        console.error('❌ Create podcast error:', error.message || error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        res.status(500).json({
+            message: 'Server error creating podcast',
+            error: error.message || 'Unknown error'
+        });
     }
 };
 
