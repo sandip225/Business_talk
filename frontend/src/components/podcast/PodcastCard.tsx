@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, Youtube, User } from 'lucide-react';
 import { Podcast } from '../../services/api';
 import { getImageUrl, extractYoutubeId, getYoutubeThumbnail } from '../../utils/imageUrl';
+import logoImage from '../../assets/logo.jpg';
 
 interface PodcastCardProps {
     podcast: Podcast;
@@ -29,7 +30,8 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
         if (youtubeId) {
             return getYoutubeThumbnail(youtubeId);
         }
-        return null;
+        // Return logo as final fallback
+        return logoImage;
     };
 
     // Get guest avatar - for small circular image
@@ -39,6 +41,18 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
 
     const thumbnailUrl = getThumbnailUrl();
     const guestAvatar = getGuestAvatar();
+
+    // Handle image error - try YouTube thumbnail, then logo
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+        const target = e.target as HTMLImageElement;
+        // Try YouTube thumbnail first
+        if (youtubeId && !target.src.includes('youtube.com')) {
+            target.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+        } else if (!target.src.includes(logoImage)) {
+            // Use logo as final fallback
+            target.src = logoImage;
+        }
+    };
 
     // Featured variant - compact horizontal card for upcoming episodes
     if (variant === 'featured') {
@@ -59,16 +73,7 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                                     alt={podcast.guestName}
                                     className="w-full h-full object-cover"
                                     loading="lazy"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        // Try YouTube thumbnail as last resort
-                                        if (youtubeId && !target.src.includes('youtube.com')) {
-                                            target.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-                                        } else {
-                                            // Hide broken image, show placeholder
-                                            target.style.display = 'none';
-                                        }
-                                    }}
+                                    onError={handleImageError}
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-maroon-100 to-maroon-200">
@@ -175,17 +180,7 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                             alt={podcast.title}
                             className="w-full h-full object-cover"
                             loading="lazy"
-                            onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                // Try YouTube thumbnail as fallback
-                                if (youtubeId && !target.src.includes('youtube.com')) {
-                                    target.src = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
-                                } else if (youtubeId && target.src.includes('maxresdefault')) {
-                                    target.src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-                                } else {
-                                    target.style.display = 'none';
-                                }
-                            }}
+                            onError={handleImageError}
                         />
                         {podcast.youtubeUrl && (
                             <a
