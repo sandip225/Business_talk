@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authAPI } from '../../services/api';
@@ -132,9 +132,9 @@ export default function AdminLogin() {
 
                     {/* Footer */}
                     <div className="mt-8 text-center">
-                        <a href="/" className="text-sm text-maroon-600 hover:text-maroon-800">
+                        <Link to="/" className="text-sm text-maroon-600 hover:text-maroon-800">
                             ← Back to Website
-                        </a>
+                        </Link>
                     </div>
 
                     {/* Demo Credentials */}
@@ -142,7 +142,7 @@ export default function AdminLogin() {
                         <p className="text-xs text-gray-500 text-center">
                             <strong>Demo Credentials:</strong><br />
                             Email: admin@businesstalk.com<br />
-                            Password: Admin@123
+                            Password: admin123
                         </p>
                     </div>
                 </div>
