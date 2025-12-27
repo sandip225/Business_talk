@@ -15,6 +15,11 @@ export const getImageUrl = (path: string | undefined | null): string | null => {
 
     const trimmedPath = path.trim();
 
+    // Ignore placeholder paths that don't exist
+    if (trimmedPath === '/default-avatar.png' || trimmedPath.includes('default-avatar')) {
+        return null;
+    }
+
     // Base64 data URL - return as-is (important for MongoDB stored images!)
     if (trimmedPath.startsWith('data:')) {
         return trimmedPath;

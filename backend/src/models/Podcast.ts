@@ -56,7 +56,7 @@ const podcastSchema = new Schema<IPodcast>(
         },
         guestImage: {
             type: String,
-            default: '/default-avatar.png',
+            default: '',
         },
         episodeNumber: {
             type: Number,
