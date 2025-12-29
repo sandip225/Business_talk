@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "update-podcasts": "tsx src/scripts/updatePodcastData.ts"
   },
   "keywords": [
     "podcast",
