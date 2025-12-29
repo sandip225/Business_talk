@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import logoImage from '../../assets/logo.jpg';
 
 // Platform URLs
 const PLATFORM_URLS = {
@@ -19,6 +20,11 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="col-span-1">
                         <div className="flex items-center space-x-3 mb-4">
+                            <img
+                                src={logoImage}
+                                alt="Business Talk Logo"
+                                className="w-12 h-12 object-contain rounded-full"
+                            />
                             <span className="text-xl font-bold text-white">
                                 Business Talk
                             </span>
