@@ -67,9 +67,10 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                 transition={{ duration: 0.5 }}
                 className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all"
             >
-                <div className="flex flex-col md:flex-row h-full">
+                <div className="flex flex-col md:flex-row h-full md:min-h-[280px]">
                     {/* Thumbnail */}
-                    <div className="md:w-72 w-full flex-shrink-0 relative bg-gray-900 overflow-hidden h-64 md:h-auto">
+                    <div className="w-full md:w-72 flex-shrink-0 relative bg-gray-900 overflow-hidden">
+                        <div className="aspect-video md:aspect-auto md:h-full relative">
                         {showPlaceholder ? (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-maroon-50 via-maroon-100 to-maroon-200 p-6">
                                 <div className="relative mb-3">
@@ -102,6 +103,7 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                         {/* Episode Badge */}
                         <div className="absolute top-2 left-2 px-3 py-1.5 bg-maroon-700 text-white text-xs font-bold rounded-md shadow-lg z-10">
                             EP #{podcast.episodeNumber}
+                        </div>
                         </div>
                     </div>
 
