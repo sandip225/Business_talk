@@ -107,127 +107,119 @@ export default function AdminCalendar() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Admin Header */}
-            <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+            {/* Header */}
+            <header className="bg-white shadow-sm sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <div className="flex items-center space-x-4">
-                            <Link to="/admin/dashboard" className="flex items-center space-x-3">
-                                <img src={logoImage} alt="Business Talk" className="w-10 h-10 rounded-full" />
-                                <div>
-                                    <h1 className="text-lg font-bold text-gray-900">Admin Dashboard</h1>
-                                    <p className="text-xs text-gray-500">Welcome, {user?.email}</p>
-                                </div>
-                            </Link>
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center space-x-3">
+                            <img
+                                src={logoImage}
+                                alt="Business Talk Logo"
+                                className="h-10 w-auto"
+                                onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=Business+Talk&size=200&background=8B1538&color=fff&bold=true'; }}
+                            />
+                            <div>
+                                <h1 className="text-lg font-bold text-gray-900">Admin Dashboard</h1>
+                                <p className="text-xs text-gray-500">Welcome, {user?.name}</p>
+                            </div>
                         </div>
                         <div className="flex items-center space-x-4">
                             <Link
                                 to="/"
-                                className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="text-sm text-gray-600 hover:text-gray-900"
                             >
-                                <Eye className="w-4 h-4" />
-                                <span className="text-sm font-medium">View Site</span>
+                                View Site
                             </Link>
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
                             >
                                 <LogOut className="w-4 h-4" />
-                                <span className="text-sm font-medium">Logout</span>
+                                <span>Logout</span>
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            {/* Navigation Tabs */}
-            <div className="bg-white border-b">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex space-x-1">
-                        <Link
-                            to="/admin/dashboard"
-                            className="flex items-center space-x-2 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-t-lg transition-colors"
-                        >
-                            <Mic className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Podcasts</span>
-                        </Link>
-                        <Link
-                            to="/admin/dashboard"
-                            className="flex items-center space-x-2 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-t-lg transition-colors"
-                        >
-                            <FileText className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Blogs</span>
-                        </Link>
-                        <div className="flex items-center space-x-2 px-4 py-3 bg-maroon-700 text-white rounded-t-lg">
-                            <CalendarIcon className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Calendar</span>
-                        </div>
-                        <Link
-                            to="/admin/import"
-                            className="flex items-center space-x-2 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-t-lg transition-colors"
-                        >
-                            <Upload className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Import</span>
-                        </Link>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Tab Navigation */}
+                <div className="flex space-x-4 mb-8">
+                    <Link
+                        to="/admin/dashboard"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Mic className="w-5 h-5" />
+                        Podcasts
+                    </Link>
+                    <Link
+                        to="/admin/dashboard"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <FileText className="w-5 h-5" />
+                        Blogs
+                    </Link>
+                    <div className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-maroon-700 text-white">
+                        <CalendarIcon className="w-5 h-5" />
+                        Calendar
                     </div>
+                    <Link
+                        to="/admin/import"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Upload className="w-5 h-5" />
+                        Import
+                    </Link>
                 </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-20">
-                        <div className="text-center">
-                            <CalendarIcon className="w-12 h-12 mx-auto text-maroon-600 animate-pulse" />
-                            <p className="mt-4 text-gray-600">Loading calendar...</p>
-                        </div>
+                    <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                        <CalendarIcon className="w-12 h-12 mx-auto text-maroon-600 animate-pulse" />
+                        <p className="mt-4 text-gray-600">Loading calendar...</p>
                     </div>
                 ) : (
                     <>
-                        {/* Header */}
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mb-8"
-                        >
-                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 flex items-center gap-3">
-                                <CalendarIcon className="w-8 h-8 text-maroon-600" />
-                                Podcast Calendar
-                            </h1>
-                            <p className="text-gray-600 mt-2">View all {podcasts.length} podcast episodes by date</p>
-                        </motion.div>
-
-                        {/* Calendar Controls */}
-                        <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
-                            <button
-                                onClick={prevMonth}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <ChevronLeft className="w-6 h-6" />
-                            </button>
-
-                            <div className="flex items-center gap-4">
-                                <h2 className="text-xl font-semibold text-gray-900">
-                                    {formatMonth(currentDate)}
-                                </h2>
-                                <button
-                                    onClick={goToToday}
-                                    className="px-3 py-1 text-sm bg-maroon-100 text-maroon-700 rounded-full hover:bg-maroon-200 transition-colors"
-                                >
-                                    Today
-                                </button>
+                        {/* Calendar Section */}
+                        <div className="bg-white rounded-xl shadow-sm">
+                            {/* Header */}
+                            <div className="p-6 border-b">
+                                <h2 className="text-lg font-bold text-gray-900">Podcast Calendar</h2>
+                                <p className="text-sm text-gray-500">View all {podcasts.length} podcast episodes by date</p>
                             </div>
 
-                            <button
-                                onClick={nextMonth}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <ChevronRight className="w-6 h-6" />
-                            </button>
-                        </div>
+                            {/* Calendar Content */}
+                            <div className="p-6"
 
-                        {/* Calendar Grid */}
-                        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                                {/* Calendar Controls */}
+                                <div className="flex items-center justify-between mb-6">
+                                    <button
+                                        onClick={prevMonth}
+                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    >
+                                        <ChevronLeft className="w-6 h-6" />
+                                    </button>
+
+                                    <div className="flex items-center gap-4">
+                                        <h2 className="text-xl font-semibold text-gray-900">
+                                            {formatMonth(currentDate)}
+                                        </h2>
+                                        <button
+                                            onClick={goToToday}
+                                            className="px-3 py-1 text-sm bg-maroon-100 text-maroon-700 rounded-full hover:bg-maroon-200 transition-colors"
+                                        >
+                                            Today
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        onClick={nextMonth}
+                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    >
+                                        <ChevronRight className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                {/* Calendar Grid */}
+                                <div className="border rounded-lg overflow-hidden">
                             {/* Day Names */}
                             <div className="grid grid-cols-7 bg-gray-50 border-b">
                                 {dayNames.map(day => (
@@ -285,24 +277,27 @@ export default function AdminCalendar() {
                                         </div>
                                     );
                                 })}
-                            </div>
-                        </div>
+                                    </div>
+                                </div>
 
-                        {/* Legend */}
-                        <div className="mt-4 flex gap-6 justify-center text-sm">
-                            <div className="flex items-center gap-2">
-                                <span className="w-4 h-4 bg-maroon-100 rounded"></span>
-                                <span className="text-gray-600">Upcoming</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-4 h-4 bg-gray-100 rounded"></span>
-                                <span className="text-gray-600">Past</span>
+                                {/* Legend */}
+                                <div className="mt-6 flex gap-6 justify-center text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-4 h-4 bg-maroon-100 rounded"></span>
+                                        <span className="text-gray-600">Upcoming</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-4 h-4 bg-gray-100 rounded"></span>
+                                        <span className="text-gray-600">Past</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </>
                 )}
+            </main>
 
-                {/* Podcast Detail Modal */}
+            {/* Podcast Detail Modal */}
                 {selectedPodcast && (
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -382,7 +377,6 @@ export default function AdminCalendar() {
                         </motion.div>
                     </motion.div>
                 )}
-            </div>
         </div>
     );
 }
