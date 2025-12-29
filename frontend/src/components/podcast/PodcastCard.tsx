@@ -69,7 +69,7 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
             >
                 <div className="flex flex-col md:flex-row h-full">
                     {/* Thumbnail */}
-                    <div className="w-full md:w-80 flex-shrink-0 relative bg-gray-900 overflow-hidden aspect-video md:aspect-[4/3]">
+                    <div className="w-full md:w-80 flex-shrink-0 relative bg-gray-900 overflow-hidden aspect-video">
                         {showPlaceholder ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-maroon-50 via-maroon-100 to-maroon-200 p-6">
                                 <div className="relative mb-3">
