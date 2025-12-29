@@ -69,9 +69,9 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
             >
                 <div className="flex flex-col md:flex-row h-full">
                     {/* Thumbnail */}
-                    <div className="w-full md:w-80 flex-shrink-0 relative bg-gray-900 overflow-hidden aspect-video">
+                    <div className="w-full md:w-80 flex-shrink-0 relative aspect-video bg-gray-100 overflow-hidden">
                         {showPlaceholder ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-maroon-50 via-maroon-100 to-maroon-200 p-6">
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-maroon-50 via-maroon-100 to-maroon-200 p-6">
                                 <div className="relative mb-3">
                                     <div className="w-20 h-20 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-lg">
                                         <svg className="w-10 h-10 text-maroon-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -87,17 +87,13 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                                 </div>
                             </div>
                         ) : (
-                            <>
-                                <img
-                                    src={thumbnailUrl}
-                                    alt={podcast.guestName}
-                                    className="absolute inset-0 w-full h-full object-cover"
-                                    loading="lazy"
-                                    onError={() => setImageError(true)}
-                                />
-                                {/* Gradient overlay for better text visibility */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                            </>
+                            <img
+                                src={thumbnailUrl}
+                                alt={podcast.guestName}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                                onError={() => setImageError(true)}
+                            />
                         )}
                         {/* Episode Badge */}
                         <div className="absolute top-2 left-2 px-3 py-1.5 bg-maroon-700 text-white text-xs font-bold rounded-md shadow-lg z-10">
