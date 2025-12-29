@@ -187,7 +187,7 @@ export default function AdminCalendar() {
                             </div>
 
                             {/* Calendar Content */}
-                            <div className="p-6"
+                            <div className="p-6">
 
                                 {/* Calendar Controls */}
                                 <div className="flex items-center justify-between mb-6">
