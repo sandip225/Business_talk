@@ -187,7 +187,7 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
     try {
         const { category, limit, page = 1 } = req.query;
         const pageNum = parseInt(page as string, 10);
-        const limitNum = limit ? parseInt(limit as string, 10) : 50;
+        const limitNum = limit ? parseInt(limit as string, 10) : 500;
 
         // Use mock data if DB not connected
         if (!isDBConnected()) {

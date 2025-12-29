@@ -1,11 +1,11 @@
-// Script to add upcoming podcasts from original site
+// Script to add upcoming podcasts and fix categorization
 // Run with: npx tsx src/add-upcoming.ts
 
 import mongoose from 'mongoose';
 import { config } from './config/env';
 import { Podcast } from './models/Podcast';
 
-// Upcoming podcasts from the original site (January 5, 2026 and later)
+// Upcoming podcasts from the original site (January 5, 2026)
 // These are episodes scheduled but not yet recorded (no YouTube URL)
 const upcomingPodcasts = [
     {
@@ -17,7 +17,7 @@ const upcomingPodcasts = [
         scheduledDate: "2026-01-05",
         scheduledTime: "10:00 PM IST",
         youtubeUrl: "",
-        description: "Stay tuned for this upcoming episode of Business Talk!",
+        description: "Stay tuned for this upcoming episode of Business Talk! Guest details will be announced soon.",
         episodeNumber: 400,
     },
     {
@@ -29,7 +29,7 @@ const upcomingPodcasts = [
         scheduledDate: "2026-01-05",
         scheduledTime: "11:30 PM IST",
         youtubeUrl: "",
-        description: "Stay tuned for this upcoming episode of Business Talk!",
+        description: "Stay tuned for this upcoming episode of Business Talk! Guest details will be announced soon.",
         episodeNumber: 401,
     },
 ];
@@ -47,6 +47,46 @@ async function addUpcomingPodcasts() {
             console.log(`   - ${p.title} (${p.guestName})`);
         });
 
+        // FIX 1: Move podcasts with YouTube URLs from 'upcoming' to 'past'
+        console.log('\n🔧 Fixing miscategorized podcasts...');
+        const miscategorized = await Podcast.find({
+            category: 'upcoming',
+            youtubeUrl: { $exists: true, $nin: ['', null] }
+        });
+
+        let fixed = 0;
+        for (const p of miscategorized) {
+            if (p.youtubeUrl && p.youtubeUrl.trim() !== '') {
+                console.log(`   📝 Moving to 'past': ${p.title}`);
+                p.category = 'past';
+                await p.save();
+                fixed++;
+            }
+        }
+        console.log(`   ✅ Fixed ${fixed} miscategorized podcasts`);
+
+        // FIX 2: Ensure podcasts WITHOUT YouTube URLs and with future dates are 'upcoming'
+        const now = new Date();
+        const shouldBeUpcoming = await Podcast.find({
+            category: 'past',
+            $or: [
+                { youtubeUrl: { $exists: false } },
+                { youtubeUrl: '' },
+                { youtubeUrl: null }
+            ],
+            scheduledDate: { $gt: now }
+        });
+
+        let madeUpcoming = 0;
+        for (const p of shouldBeUpcoming) {
+            console.log(`   📝 Moving to 'upcoming': ${p.title}`);
+            p.category = 'upcoming';
+            await p.save();
+            madeUpcoming++;
+        }
+        console.log(`   ✅ Fixed ${madeUpcoming} podcasts that should be upcoming`);
+
+        // Add new upcoming podcasts if they don't exist
         console.log(`\n📦 Adding ${upcomingPodcasts.length} upcoming podcasts...`);
 
         let added = 0;
@@ -86,26 +126,11 @@ async function addUpcomingPodcasts() {
             added++;
         }
 
-        // Also fix any podcasts that should be upcoming (no YouTube URL + future date)
-        const now = new Date();
-        const podcastsToFix = await Podcast.find({
-            youtubeUrl: { $in: ['', null] },
-            scheduledDate: { $gt: now }
-        });
-
-        let fixed = 0;
-        for (const p of podcastsToFix) {
-            if (p.category !== 'upcoming') {
-                p.category = 'upcoming';
-                await p.save();
-                fixed++;
-            }
-        }
-
         console.log(`\n✅ Complete!`);
         console.log(`   Added: ${added}`);
         console.log(`   Skipped: ${skipped}`);
-        console.log(`   Fixed category: ${fixed}`);
+        console.log(`   Fixed (moved to past): ${fixed}`);
+        console.log(`   Fixed (moved to upcoming): ${madeUpcoming}`);
 
         // Final stats
         const upcomingCount = await Podcast.countDocuments({ category: 'upcoming' });
@@ -115,11 +140,19 @@ async function addUpcomingPodcasts() {
         console.log(`   Past podcasts: ${pastCount}`);
         console.log(`   Total: ${upcomingCount + pastCount}`);
 
+        // List all upcoming podcasts
+        const allUpcoming = await Podcast.find({ category: 'upcoming' }).sort({ scheduledDate: 1 });
+        console.log(`\n📅 All upcoming podcasts:`);
+        allUpcoming.forEach(p => {
+            const hasYouTube = p.youtubeUrl && p.youtubeUrl.trim() !== '' ? ' ⚠️ HAS YOUTUBE URL' : '';
+            console.log(`   - ${p.title} (${p.guestName}) - ${p.scheduledDate?.toISOString().split('T')[0]}${hasYouTube}`);
+        });
+
     } catch (error) {
         console.error('❌ Failed:', error);
     } finally {
         await mongoose.disconnect();
-        console.log('🔌 Disconnected from MongoDB');
+        console.log('\n🔌 Disconnected from MongoDB');
     }
 }
 

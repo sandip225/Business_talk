@@ -6,9 +6,10 @@ import { config } from './config/env';
 import { Podcast } from './models/Podcast';
 
 const allPodcasts = [
-    // Upcoming podcasts
-    { title: "Seeing Beyond the Here and Now: Rethinking Corporate Purpose with Dr. Tima Bansal", guestName: "Dr. Tima Bansal", category: "upcoming", scheduledDate: "2026-01-05", youtubeUrl: "https://www.youtube.com/watch?v=bdM3lx_o5TE" },
-    { title: "To be mentioned - January 5, 2026", guestName: "TBA", category: "upcoming", scheduledDate: "2026-01-05", youtubeUrl: "" },
+    // Dr. Tima Bansal episode is PAST because it has a YouTube URL (already recorded)
+    { title: "Seeing Beyond the Here and Now: Rethinking Corporate Purpose with Dr. Tima Bansal", guestName: "Dr. Tima Bansal", category: "past", youtubeUrl: "https://www.youtube.com/watch?v=bdM3lx_o5TE" },
+
+    // Note: Upcoming podcasts are managed separately via add-upcoming.ts script
 
     // Past podcasts from the original site
     { title: "From Stores to 'Everywhere': What Dr. Santiago Gallino Reveals About the Future of Retail", guestName: "Dr. Santiago Gallino", category: "past", youtubeUrl: "https://www.youtube.com/watch?v=O70-Im-e2oY" },
@@ -180,7 +181,7 @@ async function importPodcasts() {
                 guestImage: '',
                 thumbnailImage: '',
                 category: p.category,
-                scheduledDate: p.scheduledDate ? new Date(p.scheduledDate) : new Date('2024-01-01'),
+                scheduledDate: (p as any).scheduledDate ? new Date((p as any).scheduledDate) : new Date('2024-01-01'),
                 scheduledTime: '10:00 PM IST',
                 youtubeUrl: p.youtubeUrl || '',
                 episodeNumber: allPodcasts.length - i,

@@ -13,7 +13,7 @@ export default function Podcasts() {
         const fetchPodcasts = async () => {
             setLoading(true);
             try {
-                const response = await podcastAPI.getAll();
+                const response = await podcastAPI.getAll({ limit: 500 });
                 setPodcasts(response.data.podcasts);
                 setError(null);
             } catch (err) {
