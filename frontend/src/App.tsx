@@ -24,12 +24,12 @@ function App() {
                     <Route path="blog" element={<Blog />} />
                     <Route path="blog/:id" element={<BlogPost />} />
                     <Route path="contact" element={<Contact />} />
-                    <Route path="calendar" element={<Calendar />} />
                 </Route>
                 <Route path="/admin">
                     <Route index element={<AdminLogin />} />
                     <Route path="login" element={<AdminLogin />} />
                     <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="calendar" element={<Calendar />} />
                     <Route path="podcast/new" element={<PodcastForm />} />
                     <Route path="podcast/edit/:id" element={<PodcastForm />} />
                     <Route path="blog/new" element={<BlogForm />} />
