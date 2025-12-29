@@ -219,4 +219,11 @@ export const categoryAPI = {
     delete: (id: string) => api.delete(`/categories/${id}`),
 };
 
+// Import API
+export const importAPI = {
+    importPodcasts: (podcasts: PodcastInput[]) =>
+        api.post('/import/podcasts', { podcasts }),
+    getSampleFormat: () => api.get('/import/sample'),
+};
+
 export default api;

@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes';
 import podcastRoutes from './routes/podcast.routes';
 import blogRoutes from './routes/blog.routes';
 import categoryRoutes from './routes/category.routes';
+import importRoutes from './routes/import.routes';
 
 const app = express();
 
@@ -110,6 +111,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/podcasts', podcastRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/import', importRoutes);
 
 // 404 handler
 app.use((_req, res) => {
