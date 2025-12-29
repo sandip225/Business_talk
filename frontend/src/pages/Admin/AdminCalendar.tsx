@@ -12,7 +12,6 @@ import {
     Mic,
     FileText,
     Upload,
-    Eye,
 } from 'lucide-react';
 import { podcastAPI, Podcast } from '../../services/api';
 import { useAuthStore } from '../../store/useStore';
