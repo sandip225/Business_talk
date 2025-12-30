@@ -135,7 +135,7 @@ export default function Home() {
                                 {/* Display 2 cards per row */}
                                 <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
                                     {allUpcoming.map((podcast: Podcast) => (
-                                        <PodcastCard key={podcast._id} podcast={podcast} variant="grid" />
+                                        <PodcastCard key={podcast._id} podcast={podcast} variant="thumbnail-only" />
                                     ))}
                                 </div>
                             </>

@@ -7,7 +7,7 @@ import logoImage from '../../assets/logo.jpg';
 
 interface PodcastCardProps {
     podcast: Podcast;
-    variant?: 'featured' | 'grid';
+    variant?: 'featured' | 'grid' | 'thumbnail-only';
 }
 
 export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardProps) {
@@ -172,6 +172,44 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                             </div>
                         </div>
                     </div>
+                </div>
+            </motion.div>
+        );
+    }
+
+    // Thumbnail-only variant (for upcoming podcasts - shows only the image)
+    if (variant === 'thumbnail-only') {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white rounded-lg shadow-md overflow-hidden card-hover group relative"
+            >
+                {/* Thumbnail only - no content section */}
+                <div className="relative aspect-video bg-gray-100 overflow-hidden">
+                    {thumbnailUrl ? (
+                        <img
+                            src={thumbnailUrl}
+                            alt={podcast.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={handleImageError}
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-maroon-100 to-maroon-200">
+                            <div className="text-center">
+                                <div className="w-16 h-16 mx-auto bg-maroon-300 rounded-full flex items-center justify-center mb-2">
+                                    <svg className="w-8 h-8 text-maroon-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                        <line x1="12" y1="19" x2="12" y2="22" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm font-medium text-maroon-600">Coming Soon</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </motion.div>
         );
