@@ -230,9 +230,20 @@ export default function Podcasts() {
                                         </h2>
                                         <p className="text-gray-600 mt-1">Watch our previous conversations</p>
                                     </div>
-                                    <span className="px-4 py-2 bg-maroon-100 text-maroon-700 font-semibold rounded-full text-sm">
-                                        {filteredPast.length} Episodes
-                                    </span>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="px-4 py-2 bg-maroon-100 text-maroon-700 font-semibold rounded-full text-sm">
+                                            {filteredPast.length} Episodes
+                                        </span>
+                                        <button
+                                            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                                            className="px-4 py-2 bg-maroon-700 text-white font-semibold rounded-full text-sm hover:bg-maroon-800 transition-colors flex items-center space-x-1"
+                                        >
+                                            <span>View All</span>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {filteredPast.map((podcast, index) => (
