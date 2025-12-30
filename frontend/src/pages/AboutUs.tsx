@@ -4,8 +4,8 @@ import logoImage from '../assets/logo.jpg';
 export default function AboutUs() {
     return (
         <div className="min-h-screen bg-white">
-            {/* Hero Section - Removed "A bit about me, Hello, I'm Deepak Bhatt" */}
-            <section className="relative py-20 px-4 overflow-hidden bg-white">
+            {/* Hero Section - Reduced spacing */}
+            <section className="relative py-8 px-4 overflow-hidden bg-white">
                 <div className="max-w-7xl mx-auto relative">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -13,15 +13,15 @@ export default function AboutUs() {
                         transition={{ duration: 0.6 }}
                         className="text-center"
                     >
-                        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
                             About <span className="text-maroon-700">Business Talk</span>
                         </h1>
                     </motion.div>
                 </div>
             </section>
 
-            {/* Main Content - White box only, minimal content */}
-            <section className="py-16 px-4 bg-white">
+            {/* Main Content - Reduced top padding */}
+            <section className="py-8 px-4 bg-white">
                 <div className="max-w-4xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

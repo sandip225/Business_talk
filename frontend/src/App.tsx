@@ -12,6 +12,7 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import PodcastForm from './pages/Admin/PodcastForm';
 import BlogForm from './pages/Admin/BlogForm';
 import ImportPage from './pages/Admin/ImportPage';
+import AboutEditor from './pages/Admin/AboutEditor';
 import AdminCalendar from './pages/Admin/AdminCalendar';
 import Calendar from './pages/Calendar';
 import NotFound from './pages/NotFound';
@@ -40,6 +41,7 @@ function App() {
                     <Route path="blog/new" element={<BlogForm />} />
                     <Route path="blog/edit/:id" element={<BlogForm />} />
                     <Route path="import" element={<ImportPage />} />
+                    <Route path="about" element={<AboutEditor />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
             </Routes>

@@ -16,6 +16,7 @@ import {
     Eye,
     EyeOff,
     Upload,
+    Info,
 } from 'lucide-react';
 import { podcastAPI, blogAPI, Blog } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
@@ -213,6 +214,13 @@ export default function AdminDashboard() {
                     >
                         <Upload className="w-5 h-5" />
                         Import
+                    </Link>
+                    <Link
+                        to="/admin/about"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Info className="w-5 h-5" />
+                        About Us
                     </Link>
                 </div>
 

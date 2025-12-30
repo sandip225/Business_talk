@@ -113,7 +113,7 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
 
         const [podcasts, total] = await Promise.all([
             Podcast.find(query)
-                .sort({ scheduledDate: category === 'upcoming' ? 1 : -1 })
+                .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limitNum),
             Podcast.countDocuments(query),
