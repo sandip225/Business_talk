@@ -236,9 +236,9 @@ export default function Podcasts() {
                                         </span>
                                         <button
                                             onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-                                            className="px-4 py-2 bg-maroon-700 text-white font-semibold rounded-full text-sm hover:bg-maroon-800 transition-colors flex items-center space-x-1"
+                                            className="px-4 py-2 bg-maroon-700 text-white font-semibold rounded-full text-sm hover:bg-maroon-800 transition-colors flex items-center space-x-1 whitespace-nowrap"
                                         >
-                                            <span>View All</span>
+                                            <span>View&nbsp;All</span>
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                             </svg>

@@ -65,7 +65,7 @@ export default function Home() {
                         </div>
 
                         {/* Welcome text - dark black headers */}
-                        <p className="text-base text-gray-800 max-w-4xl mx-auto mb-6 leading-relaxed text-justify">
+                        <p className="text-base text-gray-800 max-w-4xl mx-auto mb-6 leading-relaxed">
                             Welcome to Business Talk, your premier podcast for cutting-edge trends,
                             groundbreaking research, valuable insights from notable books, and engaging
                             discussions from the realms of business and academia. Whether you're an academic scholar, researcher,
@@ -74,19 +74,19 @@ export default function Home() {
                             sharing their unique perspectives and expertise.
                         </p>
 
-                        <p className="text-base text-gray-800 max-w-4xl mx-auto mb-6 leading-relaxed text-justify">
+                        <p className="text-base text-gray-800 max-w-4xl mx-auto mb-6 leading-relaxed">
                             <strong className="text-gray-900">How do we select our speakers?:</strong> The Business Talk committee identifies speakers after a meticulous screening process. These
                             experts are then invited. That is, participation as a speaker is by invitation only. We remain committed to delivering free, high-quality content to our research community and are dedicated to maintaining this model in the future.
                         </p>
 
-                        <p className="text-base text-gray-800 max-w-4xl mx-auto mb-8 leading-relaxed text-justify">
+                        <p className="text-base text-gray-800 max-w-4xl mx-auto mb-8 leading-relaxed">
                             Brought to you by <a href="https://www.globalmanagementconsultancy.com/" target="_blank" rel="noopener noreferrer" className="text-maroon-700 hover:underline font-medium">Global Management Consultancy</a>,
                             we are committed to driving innovation and excellence in the business community. The podcast recordings are available in both video and audio formats on this webpage.
                             Simply click on the respective channel icons and immerse yourself in the world of learning!
                         </p>
 
-                        {/* Platform Buttons - Compact layout */}
-                        <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto mb-8">
+                        {/* Platform Buttons - Grid layout for single line on desktop, 2 per row on mobile */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-4xl mx-auto mb-8">
                             <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
                             <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
                             <PlatformButton platform="amazon" url={PLATFORM_URLS.amazonMusic} label="Amazon Music" />
@@ -160,10 +160,10 @@ export default function Home() {
                             {pastPodcasts.length > 0 && (
                                 <Link
                                     to="/podcasts"
-                                    className="flex items-center space-x-2 text-maroon-700 hover:text-maroon-800 font-semibold transition-colors group"
+                                    className="flex items-center space-x-2 text-maroon-700 hover:text-maroon-800 font-semibold transition-colors group whitespace-nowrap"
                                 >
-                                    <span>View All</span>
-                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    <span>View&nbsp;All</span>
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                                 </Link>
                             )}
                         </div>
@@ -208,7 +208,7 @@ export default function Home() {
                         <p className="text-gray-200 text-lg mb-8 max-w-2xl mx-auto">
                             Subscribe to Business Talk on your favorite podcast platform and never miss an episode.
                         </p>
-                        <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-4xl mx-auto">
                             <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
                             <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
                             <PlatformButton platform="spotify" url={PLATFORM_URLS.spotify} label="Spotify" />
