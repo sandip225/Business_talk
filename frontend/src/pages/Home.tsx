@@ -86,7 +86,7 @@ export default function Home() {
                         </p>
 
                         {/* Platform Buttons - Compact layout */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-4xl mx-auto mb-8">
+                        <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto mb-8">
                             <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
                             <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
                             <PlatformButton platform="amazon" url={PLATFORM_URLS.amazonMusic} label="Amazon Music" />
@@ -208,7 +208,7 @@ export default function Home() {
                         <p className="text-gray-200 text-lg mb-8 max-w-2xl mx-auto">
                             Subscribe to Business Talk on your favorite podcast platform and never miss an episode.
                         </p>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-4xl mx-auto">
+                        <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto">
                             <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
                             <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
                             <PlatformButton platform="spotify" url={PLATFORM_URLS.spotify} label="Spotify" />
