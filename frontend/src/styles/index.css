@@ -21,6 +21,17 @@ body {
   background-color: #ffffff;
   color: #1a1a1a;
   line-height: 1.6;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  word-break: break-word;
+}
+
+/* Improve justified text on mobile - reduce large gaps */
+.text-justify {
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  word-break: break-word;
+  text-align: justify;
 }
 
 /* Custom Scrollbar */
@@ -124,22 +135,16 @@ body {
 
 /* Button Styles */
 .btn-primary {
-  @apply px-6 py-3 bg-maroon-700 text-white font-medium rounded-lg 
-         transition-all duration-300 hover:bg-maroon-800 
-         focus:ring-4 focus:ring-maroon-300 focus:outline-none;
+  @apply px-6 py-3 bg-maroon-700 text-white font-medium rounded-lg transition-all duration-300 hover:bg-maroon-800 focus:ring-4 focus:ring-maroon-300 focus:outline-none;
 }
 
 .btn-secondary {
-  @apply px-6 py-3 bg-white text-maroon-700 font-medium rounded-lg 
-         border-2 border-maroon-700 transition-all duration-300 
-         hover:bg-maroon-50 focus:ring-4 focus:ring-maroon-100 focus:outline-none;
+  @apply px-6 py-3 bg-white text-maroon-700 font-medium rounded-lg border-2 border-maroon-700 transition-all duration-300 hover:bg-maroon-50 focus:ring-4 focus:ring-maroon-100 focus:outline-none;
 }
 
 /* Input Styles */
 .input-field {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg 
-         focus:ring-2 focus:ring-maroon-500 focus:border-maroon-500 
-         transition-all duration-200 outline-none;
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-maroon-500 transition-all duration-200 outline-none;
 }
 
 /* Badge Styles */
@@ -166,10 +171,7 @@ body {
 
 /* Responsive Grid - 2 columns layout */
 .podcast-grid {
-  @apply grid gap-6 
-         grid-cols-1 
-         md:grid-cols-2 
-         lg:grid-cols-2;
+  @apply grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2;
 }
 
 /* Hero Section */
