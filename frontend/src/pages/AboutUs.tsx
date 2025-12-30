@@ -39,7 +39,7 @@ export default function AboutUs() {
                         </div>
 
                         {/* Business Talk Description - Justified text with same font */}
-                        <div className="text-justify">
+                        <div className="text-left md:text-justify">
                             <p className="text-gray-700 leading-relaxed text-base mb-4">
                                 Business Talk is your premier podcast for cutting-edge trends, groundbreaking research,
                                 valuable insights from notable books, and engaging discussions from the realms of
