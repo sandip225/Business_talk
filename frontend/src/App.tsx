@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
@@ -18,6 +19,7 @@ import NotFound from './pages/NotFound';
 function App() {
     return (
         <HashRouter>
+            <ScrollToTop />
             <Routes>
                 <Route path="/" element={<Layout />}>
                     <Route index element={<Home />} />

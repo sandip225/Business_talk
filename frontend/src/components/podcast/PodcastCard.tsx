@@ -248,6 +248,35 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                                 </div>
                             </a>
                         )}
+                        {/* Platform icons in bottom right corner */}
+                        <div className="absolute bottom-2 right-2 flex space-x-1.5 z-20">
+                            {podcast.youtubeUrl && (
+                                <a href={podcast.youtubeUrl} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-md" title="Watch on YouTube">
+                                    <Youtube className="w-4 h-4" />
+                                </a>
+                            )}
+                            {podcast.spotifyUrl && (
+                                <a href={podcast.spotifyUrl} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-md" title="Listen on Spotify">
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C18.24 9.541 10.68 9.241 6.241 10.561c-.6.15-1.201-.181-1.381-.721-.18-.601.18-1.2.72-1.381 5.16-1.44 13.44-1.02 18.72 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                                    </svg>
+                                </a>
+                            )}
+                            {podcast.applePodcastUrl && (
+                                <a href={podcast.applePodcastUrl} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-md" title="Listen on Apple Podcasts">
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2.182c5.423 0 9.818 4.395 9.818 9.818 0 5.423-4.395 9.818-9.818 9.818-5.423 0-9.818-4.395-9.818-9.818 0-5.423 4.395-9.818 9.818-9.818zM12 5.455c-1.8 0-3.273 1.472-3.273 3.272S10.2 12 12 12s3.273-1.473 3.273-3.273S13.8 5.455 12 5.455zm0 7.636c-.9 0-1.636.737-1.636 1.637v3.817c0 .9.736 1.637 1.636 1.637s1.636-.737 1.636-1.637v-3.817c0-.9-.736-1.637-1.636-1.637z" />
+                                    </svg>
+                                </a>
+                            )}
+                            {podcast.amazonMusicUrl && (
+                                <a href={podcast.amazonMusicUrl} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-md" title="Listen on Amazon Music">
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M2.2 17.328c-.037-.039-.076-.076-.076-.152 0-.076.039-.114.153-.114.19 0 .419.076.609.076.532 0 .799-.19.799-.685v-6.08c0-.533-.114-.761-.646-.875-.076-.02-.152-.039-.152-.133 0-.076.038-.114.114-.133.761-.133 1.294-.305 1.827-.495.076-.02.133-.02.171.038.038.076.02.133.02.21v7.582c0 .495.267.685.8.685.189 0 .418-.076.608-.076.114 0 .152.038.152.114 0 .076-.038.113-.114.152-.494.267-.988.456-1.521.456-.533 0-.951-.152-1.218-.456-.762.304-1.333.456-1.903.456-.57-.001-1.065-.19-1.598-.57z" />
+                                    </svg>
+                                </a>
+                            )}
+                        </div>
                     </>
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-maroon-100 to-maroon-200">
