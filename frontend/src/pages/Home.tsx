@@ -19,13 +19,20 @@ const PLATFORM_URLS = {
 };
 
 export default function Home() {
-    const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading, shouldRefetch } = usePodcastStore();
+    const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading, shouldRefetch, clearCache } = usePodcastStore();
     const [error, setError] = useState<string | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
+
+    const handleRetry = () => {
+        clearCache(); // Clear cache to force fresh fetch
+        setError(null);
+        setRetryCount(prev => prev + 1);
+    };
 
     useEffect(() => {
         const fetchPodcasts = async () => {
-            // Only fetch if cache is expired or empty
-            if (!shouldRefetch()) {
+            // Only fetch if cache is expired or empty, or if retry was triggered
+            if (!shouldRefetch() && retryCount === 0) {
                 return;
             }
 
@@ -43,7 +50,7 @@ export default function Home() {
         };
 
         fetchPodcasts();
-    }, [setPodcasts, setLoading, shouldRefetch]);
+    }, [setPodcasts, setLoading, shouldRefetch, retryCount, clearCache]);
 
     // Get all upcoming podcasts and top 50 past podcasts
     const allUpcoming = upcomingPodcasts;
@@ -129,7 +136,13 @@ export default function Home() {
                             </div>
                         ) : error ? (
                             <div className="text-center py-12">
-                                <p className="text-red-600">{error}</p>
+                                <p className="text-red-600 mb-4">{error}</p>
+                                <button
+                                    onClick={handleRetry}
+                                    className="px-6 py-3 bg-maroon-700 text-white font-semibold rounded-lg hover:bg-maroon-800 transition-colors"
+                                >
+                                    Retry
+                                </button>
                             </div>
                         ) : allUpcoming.length === 0 ? (
                             <div className="text-center py-12">
@@ -181,7 +194,13 @@ export default function Home() {
                             </div>
                         ) : error ? (
                             <div className="text-center py-12">
-                                <p className="text-red-600">{error}</p>
+                                <p className="text-red-600 mb-4">{error}</p>
+                                <button
+                                    onClick={handleRetry}
+                                    className="px-6 py-3 bg-maroon-700 text-white font-semibold rounded-lg hover:bg-maroon-800 transition-colors"
+                                >
+                                    Retry
+                                </button>
                             </div>
                         ) : top50Past.length === 0 ? (
                             <div className="text-center py-12">
