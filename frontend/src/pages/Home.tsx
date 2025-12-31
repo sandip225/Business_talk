@@ -91,7 +91,7 @@ export default function Home() {
                         </p>
 
                         {/* Platform Buttons - Grid layout for single line on desktop, 2 per row on mobile */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-4xl mx-auto mb-8">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-4xl mx-auto">
                             <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
                             <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
                             <PlatformButton platform="amazon" url={PLATFORM_URLS.amazonMusic} label="Amazon Music" />
@@ -104,7 +104,7 @@ export default function Home() {
             </section>
 
             {/* Upcoming Podcasts Section - High-res images only */}
-            <section className="py-16 bg-white">
+            <section className="py-8 sm:py-12 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div
                         initial={{ opacity: 0 }}
