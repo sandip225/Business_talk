@@ -1,11 +1,15 @@
 import { motion } from 'framer-motion';
 import logoImage from '../assets/logo.jpg';
+import StayUpdated from '../components/layout/StayUpdated';
 
 export default function AboutUs() {
     return (
         <div className="min-h-screen bg-white">
-            {/* Hero Section - Minimal spacing */}
-            <section className="relative pt-4 pb-2 px-4 overflow-hidden bg-white">
+            {/* Hero Section - Matching Podcasts styling */}
+            <section className="relative py-16 px-4 overflow-hidden bg-gradient-to-r from-maroon-900 to-maroon-800">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+                </div>
                 <div className="max-w-7xl mx-auto relative">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -13,8 +17,8 @@ export default function AboutUs() {
                         transition={{ duration: 0.6 }}
                         className="text-center"
                     >
-                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-                            About <span className="text-maroon-700">Business Talk</span>
+                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                            About <span className="text-gold-400">Business Talk</span>
                         </h1>
                     </motion.div>
                 </div>
@@ -55,6 +59,8 @@ export default function AboutUs() {
                     </motion.div>
                 </div>
             </section>
+
+            <StayUpdated />
         </div>
     );
 }

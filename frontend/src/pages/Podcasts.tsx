@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, Filter, Calendar, Youtube, Play, User, Loader2 } from 'lucide-react';
 import { podcastAPI, Podcast } from '../services/api';
 import { usePodcastStore } from '../store/useStore';
+import StayUpdated from '../components/layout/StayUpdated';
 
 // Number of items per row (3 on desktop) * 2 rows = 6 items initially
 const ITEMS_PER_LOAD = 6;
@@ -370,6 +371,8 @@ export default function Podcasts() {
                     )}
                 </>
             )}
+
+            <StayUpdated />
         </div>
     );
 }

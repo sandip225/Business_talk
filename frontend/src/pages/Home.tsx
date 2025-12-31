@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PodcastCard from '../components/podcast/PodcastCard';
+import StayUpdated from '../components/layout/StayUpdated';
 import { podcastAPI, Podcast } from '../services/api';
 import { usePodcastStore } from '../store/useStore';
 import logoImage from '../assets/logo.jpg';
@@ -226,31 +227,8 @@ export default function Home() {
             </section>
 
             {/* Stay Updated Section */}
-            <section className="py-16 bg-maroon-100 text-maroon-900">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                            Stay Updated with Our Latest Episodes
-                        </h2>
-                        <p className="text-maroon-800 text-lg mb-8 max-w-2xl mx-auto">
-                            Subscribe to Business Talk on your favorite podcast platform and never miss an episode.
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 max-w-4xl mx-auto">
-                            <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
-                            <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
-                            <PlatformButton platform="spotify" url={PLATFORM_URLS.spotify} label="Spotify" />
-                            <PlatformButton platform="amazon" url={PLATFORM_URLS.amazonMusic} label="Amazon Music" />
-                            <PlatformButton platform="audible" url={PLATFORM_URLS.audible} label="Audible" />
-                            <PlatformButton platform="soundcloud" url={PLATFORM_URLS.soundcloud} label="SoundCloud" />
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
+            {/* Stay Updated Section */}
+            <StayUpdated />
         </div>
     );
 }
