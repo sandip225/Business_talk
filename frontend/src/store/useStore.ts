@@ -10,20 +10,6 @@ interface AuthState {
     logout: () => void;
 }
 
-interface PodcastState {
-    podcasts: Podcast[];
-    upcomingPodcasts: Podcast[];
-    pastPodcasts: Podcast[];
-    isLoading: boolean;
-    error: string | null;
-    setPodcasts: (podcasts: Podcast[]) => void;
-    setLoading: (loading: boolean) => void;
-    setError: (error: string | null) => void;
-    addPodcast: (podcast: Podcast) => void;
-    updatePodcast: (id: string, podcast: Podcast) => void;
-    removePodcast: (id: string) => void;
-}
-
 // Auth Store
 export const useAuthStore = create<AuthState>()(
     persist(
@@ -52,51 +38,97 @@ export const useAuthStore = create<AuthState>()(
     )
 );
 
-// Podcast Store
-export const usePodcastStore = create<PodcastState>((set, get) => ({
-    podcasts: [],
-    upcomingPodcasts: [],
-    pastPodcasts: [],
-    isLoading: false,
-    error: null,
+// Podcast Store with persistent caching
+interface PodcastState {
+    podcasts: Podcast[];
+    upcomingPodcasts: Podcast[];
+    pastPodcasts: Podcast[];
+    isLoading: boolean;
+    error: string | null;
+    lastFetched: number | null; // Timestamp of last fetch
+    setPodcasts: (podcasts: Podcast[]) => void;
+    setLoading: (loading: boolean) => void;
+    setError: (error: string | null) => void;
+    addPodcast: (podcast: Podcast) => void;
+    updatePodcast: (id: string, podcast: Podcast) => void;
+    removePodcast: (id: string) => void;
+    shouldRefetch: () => boolean;
+    clearCache: () => void;
+}
 
-    setPodcasts: (podcasts) =>
-        set({
-            podcasts,
-            upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
-            pastPodcasts: podcasts.filter((p) => p.category === 'past'),
+// Cache duration: 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
+
+export const usePodcastStore = create<PodcastState>()(
+    persist(
+        (set, get) => ({
+            podcasts: [],
+            upcomingPodcasts: [],
+            pastPodcasts: [],
+            isLoading: false,
+            error: null,
+            lastFetched: null,
+
+            setPodcasts: (podcasts) =>
+                set({
+                    podcasts,
+                    upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
+                    pastPodcasts: podcasts.filter((p) => p.category === 'past'),
+                    lastFetched: Date.now(),
+                }),
+
+            setLoading: (isLoading) => set({ isLoading }),
+
+            setError: (error) => set({ error }),
+
+            // Check if data should be refetched (cache expired or no data)
+            shouldRefetch: () => {
+                const { lastFetched, podcasts } = get();
+                if (!lastFetched || podcasts.length === 0) return true;
+                return Date.now() - lastFetched > CACHE_DURATION;
+            },
+
+            // Clear cache to force refetch
+            clearCache: () => set({ lastFetched: null }),
+
+            addPodcast: (podcast) => {
+                const podcasts = [...get().podcasts, podcast];
+                set({
+                    podcasts,
+                    upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
+                    pastPodcasts: podcasts.filter((p) => p.category === 'past'),
+                });
+            },
+
+            updatePodcast: (id, updatedPodcast) => {
+                const podcasts = get().podcasts.map((p) =>
+                    p._id === id ? updatedPodcast : p
+                );
+                set({
+                    podcasts,
+                    upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
+                    pastPodcasts: podcasts.filter((p) => p.category === 'past'),
+                });
+            },
+
+            removePodcast: (id) => {
+                const podcasts = get().podcasts.filter((p) => p._id !== id);
+                set({
+                    podcasts,
+                    upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
+                    pastPodcasts: podcasts.filter((p) => p.category === 'past'),
+                });
+            },
         }),
+        {
+            name: 'podcast-cache',
+            partialize: (state) => ({
+                podcasts: state.podcasts,
+                upcomingPodcasts: state.upcomingPodcasts,
+                pastPodcasts: state.pastPodcasts,
+                lastFetched: state.lastFetched,
+            }),
+        }
+    )
+);
 
-    setLoading: (isLoading) => set({ isLoading }),
-
-    setError: (error) => set({ error }),
-
-    addPodcast: (podcast) => {
-        const podcasts = [...get().podcasts, podcast];
-        set({
-            podcasts,
-            upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
-            pastPodcasts: podcasts.filter((p) => p.category === 'past'),
-        });
-    },
-
-    updatePodcast: (id, updatedPodcast) => {
-        const podcasts = get().podcasts.map((p) =>
-            p._id === id ? updatedPodcast : p
-        );
-        set({
-            podcasts,
-            upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
-            pastPodcasts: podcasts.filter((p) => p.category === 'past'),
-        });
-    },
-
-    removePodcast: (id) => {
-        const podcasts = get().podcasts.filter((p) => p._id !== id);
-        set({
-            podcasts,
-            upcomingPodcasts: podcasts.filter((p) => p.category === 'upcoming'),
-            pastPodcasts: podcasts.filter((p) => p.category === 'past'),
-        });
-    },
-}));

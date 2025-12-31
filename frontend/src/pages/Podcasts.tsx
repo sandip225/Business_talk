@@ -8,7 +8,7 @@ import { usePodcastStore } from '../store/useStore';
 const ITEMS_PER_LOAD = 6;
 
 export default function Podcasts() {
-    const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading } = usePodcastStore();
+    const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading, shouldRefetch } = usePodcastStore();
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [displayCount, setDisplayCount] = useState(ITEMS_PER_LOAD);
@@ -17,6 +17,11 @@ export default function Podcasts() {
 
     useEffect(() => {
         const fetchPodcasts = async () => {
+            // Only fetch if cache is expired or empty
+            if (!shouldRefetch()) {
+                return;
+            }
+
             setLoading(true);
             try {
                 const response = await podcastAPI.getAll({ limit: 500 });
@@ -31,7 +36,7 @@ export default function Podcasts() {
         };
 
         fetchPodcasts();
-    }, [setPodcasts, setLoading]);
+    }, [setPodcasts, setLoading, shouldRefetch]);
 
     // Reset display count when search term changes
     useEffect(() => {

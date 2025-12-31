@@ -19,11 +19,16 @@ const PLATFORM_URLS = {
 };
 
 export default function Home() {
-    const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading } = usePodcastStore();
+    const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading, shouldRefetch } = usePodcastStore();
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchPodcasts = async () => {
+            // Only fetch if cache is expired or empty
+            if (!shouldRefetch()) {
+                return;
+            }
+
             setLoading(true);
             try {
                 const response = await podcastAPI.getAll({ limit: 500 });
@@ -38,7 +43,7 @@ export default function Home() {
         };
 
         fetchPodcasts();
-    }, [setPodcasts, setLoading]);
+    }, [setPodcasts, setLoading, shouldRefetch]);
 
     // Get all upcoming podcasts and top 50 past podcasts
     const allUpcoming = upcomingPodcasts;
