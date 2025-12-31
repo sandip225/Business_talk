@@ -265,11 +265,6 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                         )}
                         {/* Platform icons in bottom right corner */}
                         <div className="absolute bottom-2 right-2 flex space-x-1.5 z-20">
-                            {podcast.youtubeUrl && (
-                                <a href={podcast.youtubeUrl} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-md" title="Watch on YouTube">
-                                    <Youtube className="w-4 h-4" />
-                                </a>
-                            )}
                             {podcast.spotifyUrl && (
                                 <a href={podcast.spotifyUrl} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center hover:scale-110 transition-transform shadow-md" title="Listen on Spotify">
                                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
