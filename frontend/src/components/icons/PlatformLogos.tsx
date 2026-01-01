@@ -41,13 +41,13 @@ export const PlatformButton = ({ platform, url, label, className = "" }: Platfor
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`group inline-flex items-center gap-3 px-5 py-3 ${config.bg} text-white rounded-lg ${config.hover} transition-all duration-300 shadow-lg ${config.shadow} hover:scale-105 ${className}`}
+            className={`group inline-flex items-center justify-center gap-3 px-6 py-3.5 min-w-[160px] ${config.bg} text-white rounded-lg ${config.hover} transition-all duration-300 shadow-lg ${config.shadow} hover:scale-105 ${className}`}
         >
-            <div className="bg-white rounded-md p-1.5 flex items-center justify-center shadow-inner">
+            <div className="bg-white rounded-md p-2 flex items-center justify-center shadow-inner min-w-[32px] min-h-[32px]">
                 <img
                     src={imageSrc}
                     alt={`${label} logo`}
-                    className="w-6 h-6 object-contain"
+                    className="w-7 h-7 object-contain"
                 />
             </div>
             <span className="font-bold text-sm whitespace-nowrap tracking-wide">{label}</span>
@@ -67,9 +67,9 @@ export const PlatformIcon = ({ platform, url, size = "md" }: { platform: 'youtub
     };
 
     const sizeConfig = {
-        sm: { circle: 'w-10 h-10', icon: 'w-6 h-6', padding: 'p-1.5' },
-        md: { circle: 'w-14 h-14', icon: 'w-8 h-8', padding: 'p-2' },
-        lg: { circle: 'w-20 h-20', icon: 'w-12 h-12', padding: 'p-2.5' },
+        sm: { circle: 'w-11 h-11', icon: 'w-6 h-6', padding: 'p-2' },
+        md: { circle: 'w-14 h-14', icon: 'w-8 h-8', padding: 'p-2.5' },
+        lg: { circle: 'w-20 h-20', icon: 'w-12 h-12', padding: 'p-3' },
     };
 
     const config = platformConfig[platform];

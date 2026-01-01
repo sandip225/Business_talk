@@ -107,7 +107,7 @@ export default function Home() {
                         </p>
 
                         {/* Platform Buttons - Professional flex layout */}
-                        <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 max-w-5xl mx-auto">
+                        <div className="flex flex-wrap justify-center items-center gap-4 md:gap-4 max-w-6xl mx-auto">
                             <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
                             <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
                             <PlatformButton platform="amazon" url={PLATFORM_URLS.amazonMusic} label="Amazon Music" />
