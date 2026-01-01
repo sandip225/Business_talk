@@ -1,7 +1,7 @@
 // Image assets for platform logos
 import youtubeLogo from '../../assets/platforms/youtube.png';
 import spotifyLogo from '../../assets/platforms/spotify.png';
-import appleLogo from '../../assets/platforms/apple-podcasts.jpg';
+import appleLogo from '../../assets/platforms/apple-podcasts.png';
 import amazonLogo from '../../assets/platforms/amazon-music.png';
 import audibleLogo from '../../assets/platforms/audible.jpg';
 import soundcloudLogo from '../../assets/platforms/soundcloud.png';
