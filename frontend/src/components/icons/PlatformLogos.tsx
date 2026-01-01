@@ -42,14 +42,16 @@ export const PlatformButton = ({ platform, url, label, className = "" }: Platfor
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-1.5 px-3 py-2 ${config.bg} text-white rounded-md ${config.hover} transition-colors shadow-md hover:shadow-lg ${className}`}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 ${config.bg} text-white rounded-md ${config.hover} transition-colors shadow-md hover:shadow-lg ${className}`}
         >
-            <img
-                src={imageSrc}
-                alt={`${label} logo`}
-                className="w-5 h-5 object-contain rounded-sm bg-white/10"
-            />
-            <span className="font-semibold text-xs whitespace-nowrap">{label}</span>
+            <div className="bg-white rounded p-1 flex items-center justify-center">
+                <img
+                    src={imageSrc}
+                    alt={`${label} logo`}
+                    className="w-5 h-5 object-contain"
+                />
+            </div>
+            <span className="font-semibold text-sm whitespace-nowrap">{label}</span>
         </a>
     );
 };
@@ -66,9 +68,9 @@ export const PlatformIcon = ({ platform, url, size = "md" }: { platform: 'youtub
     };
 
     const sizeConfig = {
-        sm: { circle: 'w-6 h-6', icon: 'w-4 h-4' },
-        md: { circle: 'w-12 h-12', icon: 'w-8 h-8' },
-        lg: { circle: 'w-16 h-16', icon: 'w-10 h-10' },
+        sm: { circle: 'w-8 h-8', icon: 'w-5 h-5', padding: 'p-1' },
+        md: { circle: 'w-12 h-12', icon: 'w-7 h-7', padding: 'p-1.5' },
+        lg: { circle: 'w-16 h-16', icon: 'w-10 h-10', padding: 'p-2' },
     };
 
     const config = platformConfig[platform];
@@ -82,11 +84,13 @@ export const PlatformIcon = ({ platform, url, size = "md" }: { platform: 'youtub
             rel="noopener noreferrer"
             className={`${sizes.circle} rounded-full ${config.bg} ${config.hover} flex items-center justify-center transition-colors shadow-lg flex-shrink-0`}
         >
-            <img
-                src={imageSrc}
-                alt={`${platform} logo`}
-                className={`${sizes.icon} object-contain rounded-full bg-white`}
-            />
+            <div className={`bg-white rounded-full ${sizes.padding} flex items-center justify-center`}>
+                <img
+                    src={imageSrc}
+                    alt={`${platform} logo`}
+                    className={`${sizes.icon} object-contain`}
+                />
+            </div>
         </a>
     );
 };
