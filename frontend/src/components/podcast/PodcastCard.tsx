@@ -366,7 +366,7 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                     {/* Main Guest (First Guest) */}
                     {guests.length > 0 && (
                         <div className="flex items-start space-x-3 mb-2">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden shadow-sm ring-2 ring-gray-300">
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden shadow-sm ring-2 ring-gray-300">
                                 {guests[0].image && getImageUrl(guests[0].image) ? (
                                     <img
                                         src={getImageUrl(guests[0].image) || ''}
@@ -377,7 +377,7 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                                             const target = e.target as HTMLImageElement;
                                             target.parentElement!.innerHTML = `
                                                 <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-500">
-                                                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                                         <circle cx="12" cy="7" r="4"></circle>
                                                     </svg>
@@ -387,7 +387,7 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-500">
-                                        <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                        <User className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                                     </div>
                                 )}
                             </div>
