@@ -329,45 +329,46 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                 </div>
 
                 {/* Platform Links */}
-                <div className="flex flex-col space-y-3 pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                    {/* Watch Now button on left */}
                     {podcast.youtubeUrl ? (
                         <a
                             href={podcast.youtubeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center space-x-1.5 px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors font-medium text-sm"
+                            className="flex items-center space-x-1.5 px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors font-medium text-sm"
                         >
                             <Youtube className="w-4 h-4" />
                             <span>Watch Now</span>
                         </a>
                     ) : (
-                        <span className="text-xs text-center text-gray-400 font-medium py-2">Coming Soon</span>
+                        <span className="text-xs text-gray-400 font-medium">Coming Soon</span>
                     )}
 
-                    {/* Platform logos below Watch Now button */}
-                    <div className="flex justify-center space-x-2">
+                    {/* Platform logos on right */}
+                    <div className="flex space-x-1.5">
                         {podcast.spotifyUrl && (
-                            <a href={podcast.spotifyUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Spotify">
+                            <a href={podcast.spotifyUrl} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Spotify">
                                 <img src={spotifyLogo} alt="Spotify" className="w-full h-full object-contain" />
                             </a>
                         )}
                         {podcast.applePodcastUrl && (
-                            <a href={podcast.applePodcastUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Apple Podcasts">
+                            <a href={podcast.applePodcastUrl} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Apple Podcasts">
                                 <img src={appleLogo} alt="Apple Podcasts" className="w-full h-full object-contain" />
                             </a>
                         )}
                         {podcast.amazonMusicUrl && (
-                            <a href={podcast.amazonMusicUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Amazon Music">
+                            <a href={podcast.amazonMusicUrl} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Amazon Music">
                                 <img src={amazonLogo} alt="Amazon Music" className="w-full h-full object-contain" />
                             </a>
                         )}
                         {podcast.audibleUrl && (
-                            <a href={podcast.audibleUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Audible">
+                            <a href={podcast.audibleUrl} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on Audible">
                                 <img src={audibleLogo} alt="Audible" className="w-full h-full object-contain" />
                             </a>
                         )}
                         {podcast.soundcloudUrl && (
-                            <a href={podcast.soundcloudUrl} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on SoundCloud">
+                            <a href={podcast.soundcloudUrl} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white border border-gray-200 rounded-lg p-1.5 hover:scale-110 transition-transform shadow-sm" title="Listen on SoundCloud">
                                 <img src={soundcloudLogo} alt="SoundCloud" className="w-full h-full object-contain" />
                             </a>
                         )}
