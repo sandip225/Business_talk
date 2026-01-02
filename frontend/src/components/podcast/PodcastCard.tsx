@@ -40,27 +40,25 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
         return logoImage;
     };
 
-    // Get guest avatar - for small circular image
-    // Falls back to thumbnail cropped to focus on guest (typically on right side)
-    const getGuestAvatar = () => {
-        // First priority: dedicated guest image
-        const guestUrl = getImageUrl(podcast.guestImage);
-        if (guestUrl) return { url: guestUrl, position: 'center' };
-
-        // Second priority: thumbnail image (crop to focus on guest - usually right side)
-        const thumbnailUrl = getImageUrl(podcast.thumbnailImage);
-        if (thumbnailUrl) return { url: thumbnailUrl, position: 'right 20%' };
-
-        // Third priority: YouTube thumbnail (guest usually on left/center)
-        if (youtubeId) {
-            return { url: getYoutubeThumbnail(youtubeId), position: 'center 30%' };
+    // Get guest info - prioritize guests array, fallback to legacy fields
+    const getGuestInfo = () => {
+        if (podcast.guests && podcast.guests.length > 0) {
+            return podcast.guests;
         }
-
-        return null;
+        // Fallback to legacy single guest
+        if (podcast.guestName && podcast.guestTitle) {
+            return [{
+                name: podcast.guestName,
+                title: podcast.guestTitle,
+                institution: podcast.guestInstitution,
+                image: podcast.guestImage
+            }];
+        }
+        return [];
     };
 
+    const guests = getGuestInfo();
     const thumbnailUrl = getThumbnailUrl();
-    const guestAvatarData = getGuestAvatar();
 
     // State for image error handling (moved to top level to comply with Rules of Hooks)
     const [imageError, setImageError] = React.useState(false);
@@ -130,34 +128,44 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                                 </h3>
                             </div>
 
-                            {/* Middle: Guest Info */}
-                            <div className="flex items-center space-x-3 mb-4">
-                                <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 ring-2 ring-maroon-200 shadow-md">
-                                    {guestAvatarData ? (
-                                        <img
-                                            src={guestAvatarData.url}
-                                            alt={podcast.guestName}
-                                            className="w-full h-full object-cover"
-                                            style={{ objectPosition: guestAvatarData.position }}
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400">
-                                            <User className="w-7 h-7 text-gray-500" />
+                            {/* Middle: Guest Info - Show all guests */}
+                            <div className="space-y-3 mb-4">
+                                {guests.map((guest, index) => (
+                                    <div key={index} className="flex items-center space-x-3">
+                                        <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 ring-2 ring-maroon-200 shadow-md">
+                                            {guest.image && getImageUrl(guest.image) ? (
+                                                <img
+                                                    src={getImageUrl(guest.image) || ''}
+                                                    alt={guest.name}
+                                                    className="w-full h-full object-cover"
+                                                    loading="lazy"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.parentElement!.innerHTML = `
+                                                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-500">
+                                                                <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                                    <circle cx="12" cy="7" r="4"></circle>
+                                                                </svg>
+                                                            </div>
+                                                        `;
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-500">
+                                                    <User className="w-7 h-7 text-white" />
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <div className="text-sm font-bold text-gray-900 truncate">{podcast.guestName}</div>
-                                    <div className="text-xs text-gray-600 truncate mt-0.5">{podcast.guestTitle}</div>
-                                    {podcast.guestInstitution && (
-                                        <div className="text-xs text-gray-500 truncate mt-0.5">{podcast.guestInstitution}</div>
-                                    )}
-                                </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-sm font-bold text-gray-900 truncate">{guest.name}</div>
+                                            <div className="text-xs text-gray-600 truncate mt-0.5">{guest.title}</div>
+                                            {guest.institution && (
+                                                <div className="text-xs text-gray-500 truncate mt-0.5">{guest.institution}</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             {/* Bottom: Date, Time & Platform Icons */}
@@ -298,34 +306,44 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
                     {podcast.title}
                 </h3>
 
-                {/* Guest Info */}
-                <div className="flex items-start space-x-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden shadow-sm ring-2 ring-gray-300">
-                        {guestAvatarData ? (
-                            <img
-                                src={guestAvatarData.url}
-                                alt={podcast.guestName}
-                                className="w-full h-full object-cover"
-                                style={{ objectPosition: guestAvatarData.position }}
-                                loading="lazy"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                }}
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400">
-                                <User className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
+                {/* Guest Info - Show all guests */}
+                <div className="space-y-3 mb-4">
+                    {guests.map((guest, index) => (
+                        <div key={index} className="flex items-start space-x-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden shadow-sm ring-2 ring-gray-300">
+                                {guest.image && getImageUrl(guest.image) ? (
+                                    <img
+                                        src={getImageUrl(guest.image) || ''}
+                                        alt={guest.name}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.parentElement!.innerHTML = `
+                                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-500">
+                                                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                        <circle cx="12" cy="7" r="4"></circle>
+                                                    </svg>
+                                                </div>
+                                            `;
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-500">
+                                        <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="text-sm font-bold text-gray-900 truncate">{podcast.guestName}</div>
-                        <div className="text-xs text-gray-600 truncate">{podcast.guestTitle}</div>
-                        {podcast.guestInstitution && (
-                            <div className="text-xs text-gray-500 truncate">{podcast.guestInstitution}</div>
-                        )}
-                    </div>
+                            <div className="flex-1 min-w-0 overflow-hidden">
+                                <div className="text-sm font-bold text-gray-900 truncate">{guest.name}</div>
+                                <div className="text-xs text-gray-600 truncate">{guest.title}</div>
+                                {guest.institution && (
+                                    <div className="text-xs text-gray-500 truncate">{guest.institution}</div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
                 {/* Platform Links */}

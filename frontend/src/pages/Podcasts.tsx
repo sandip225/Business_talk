@@ -97,10 +97,15 @@ export default function Podcasts() {
         return podcastList.filter(
             (podcast) =>
                 podcast.title.toLowerCase().includes(search) ||
-                podcast.guestName.toLowerCase().includes(search) ||
+                podcast.guestName?.toLowerCase().includes(search) ||
                 podcast.description.toLowerCase().includes(search) ||
-                podcast.guestTitle.toLowerCase().includes(search) ||
-                podcast.guestInstitution?.toLowerCase().includes(search)
+                podcast.guestTitle?.toLowerCase().includes(search) ||
+                podcast.guestInstitution?.toLowerCase().includes(search) ||
+                podcast.guests?.some(guest => 
+                    guest.name.toLowerCase().includes(search) ||
+                    guest.title.toLowerCase().includes(search) ||
+                    guest.institution?.toLowerCase().includes(search)
+                )
         );
     };
 

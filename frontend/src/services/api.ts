@@ -123,10 +123,13 @@ export interface Podcast {
     title: string;
     description: string;
     category: 'upcoming' | 'past';
-    guestName: string;
-    guestTitle: string;
-    guestInstitution: string;
-    guestImage: string;
+    // Legacy single guest fields (for backward compatibility)
+    guestName?: string;
+    guestTitle?: string;
+    guestInstitution?: string;
+    guestImage?: string;
+    // New multi-guest support
+    guests?: Guest[];
     episodeNumber: number;
     scheduledDate: string;
     scheduledTime: string;
