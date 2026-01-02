@@ -7,17 +7,6 @@ import StayUpdated from '../components/layout/StayUpdated';
 import { podcastAPI, Podcast } from '../services/api';
 import { usePodcastStore } from '../store/useStore';
 import logoImage from '../assets/logo.jpg';
-import { PlatformButton } from '../components/icons/PlatformLogos';
-
-// Platform URLs
-const PLATFORM_URLS = {
-    youtube: 'https://www.youtube.com/@businesstalkwithdeepakbhatt',
-    applePodcasts: 'https://podcasts.apple.com/us/podcast/business-talk/id1596076450',
-    amazonMusic: 'https://music.amazon.in/podcasts/1803c906-ea83-406b-82c6-fcacd13873af/business-talk',
-    audible: 'https://www.audible.in/podcast/Business-Talk/B0DC5NTGMS?qid=1723093390&sr=1-1',
-    spotify: 'https://open.spotify.com/show/3IB2aXm9eZkLiSVaUZEQuK?si=M_9QZ3AlSC65B9HIMYXbmg',
-    soundcloud: 'https://soundcloud.com/business_talk',
-};
 
 export default function Home() {
     const { upcomingPodcasts, pastPodcasts, setUpcomingPodcasts, setPastPodcasts, setLoading, isLoading, shouldRefetch, clearCache } = usePodcastStore();
@@ -100,21 +89,11 @@ export default function Home() {
                             experts are then invited. That is, participation as a speaker is by invitation only. We remain committed to delivering free, high-quality content to our research community and are dedicated to maintaining this model in the future.
                         </p>
 
-                        <p className="text-base text-gray-800 max-w-4xl mx-auto mb-8 leading-relaxed text-justify">
+                        <p className="text-base text-gray-800 max-w-4xl mx-auto leading-relaxed text-justify">
                             Brought to you by <a href="https://www.globalmanagementconsultancy.com/" target="_blank" rel="noopener noreferrer" className="text-maroon-700 hover:underline font-medium">Global Management Consultancy</a>,
                             we are committed to driving innovation and excellence in the business community. The podcast recordings are available in both video and audio formats on this webpage.
-                            Simply click on the respective channel icons and immerse yourself in the world of learning!
+                            Simply check the footer for links to all our podcast platforms!
                         </p>
-
-                        {/* Platform Buttons - 2x2 grid on mobile, all in one line on desktop */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-nowrap justify-center items-center gap-3 max-w-7xl mx-auto">
-                            <PlatformButton platform="youtube" url={PLATFORM_URLS.youtube} label="YouTube" />
-                            <PlatformButton platform="apple" url={PLATFORM_URLS.applePodcasts} label="Apple Podcasts" />
-                            <PlatformButton platform="amazon" url={PLATFORM_URLS.amazonMusic} label="Amazon Music" />
-                            <PlatformButton platform="audible" url={PLATFORM_URLS.audible} label="Audible" />
-                            <PlatformButton platform="spotify" url={PLATFORM_URLS.spotify} label="Spotify" />
-                            <PlatformButton platform="soundcloud" url={PLATFORM_URLS.soundcloud} label="SoundCloud" />
-                        </div>
                     </motion.div>
                 </div>
             </section>
