@@ -44,12 +44,12 @@ export default function AboutUs() {
 
                         {/* Business Talk Description - Responsive: left on mobile, justify on desktop */}
                         <div className="space-y-6">
-                            <p className="text-gray-700 leading-relaxed text-base text-justify">
+                            <p className="text-gray-700 text-base text-justify" style={{ lineHeight: '1.75rem' }}>
                                 Business Talk is your premier podcast for cutting-edge trends, groundbreaking research,
                                 valuable insights from notable books, and engaging discussions from the realms of
                                 business and academia.
                             </p>
-                            <p className="text-gray-700 leading-relaxed text-base text-justify">
+                            <p className="text-gray-700 text-base text-justify" style={{ lineHeight: '1.75rem' }}>
                                 Whether you're an academic scholar, researcher, business professional, or entrepreneur,
                                 our episodes will inspire you to question the status quo and spark actionable ideas.
                                 Our goal is to deliver valuable research insights from the world's renowned scholars,
