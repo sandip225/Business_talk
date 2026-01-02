@@ -143,16 +143,26 @@ export interface Podcast {
     updatedAt: string;
 }
 
-export interface PodcastInput {
+export interface Guest {
+    name: string;
     title: string;
-    description: string;
+    institution?: string;
+    image?: string;
+}
+
+export interface PodcastInput {
+    title?: string;
+    description?: string;
     category: 'upcoming' | 'past';
-    guestName: string;
-    guestTitle: string;
+    // Legacy single guest fields (for backward compatibility)
+    guestName?: string;
+    guestTitle?: string;
     guestInstitution?: string;
     guestImage?: string;
-    episodeNumber: number;
-    scheduledDate: string;
+    // New multi-guest support
+    guests?: Guest[];
+    episodeNumber?: number;
+    scheduledDate?: string;
     scheduledTime?: string;
     youtubeUrl?: string;
     spotifyUrl?: string;

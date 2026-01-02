@@ -1,13 +1,23 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IGuest {
+    name: string;
+    title: string;
+    institution?: string;
+    image?: string;
+}
+
 export interface IPodcast extends Document {
     title: string;
     description: string;
     category: 'upcoming' | 'past';
-    guestName: string;
-    guestTitle: string;
-    guestInstitution: string;
-    guestImage: string;
+    // Legacy single guest fields (kept for backward compatibility)
+    guestName?: string;
+    guestTitle?: string;
+    guestInstitution?: string;
+    guestImage?: string;
+    // New multi-guest support
+    guests: IGuest[];
     episodeNumber: number;
     scheduledDate: Date;
     scheduledTime: string;
@@ -23,30 +33,47 @@ export interface IPodcast extends Document {
     updatedAt: Date;
 }
 
+const guestSchema = new Schema<IGuest>({
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    institution: {
+        type: String,
+        trim: true,
+    },
+    image: {
+        type: String,
+    },
+}, { _id: false });
+
 const podcastSchema = new Schema<IPodcast>(
     {
         title: {
             type: String,
-            required: [true, 'Title is required'],
             trim: true,
         },
         description: {
             type: String,
-            required: [true, 'Description is required'],
         },
         category: {
             type: String,
             enum: ['upcoming', 'past'],
             required: [true, 'Category is required'],
         },
+        // Legacy single guest fields (optional for backward compatibility)
         guestName: {
             type: String,
-            required: [true, 'Guest name is required'],
             trim: true,
         },
         guestTitle: {
             type: String,
-            required: [true, 'Guest title is required'],
             trim: true,
         },
         guestInstitution: {
@@ -58,13 +85,16 @@ const podcastSchema = new Schema<IPodcast>(
             type: String,
             default: '',
         },
+        // New multi-guest support
+        guests: {
+            type: [guestSchema],
+            default: [],
+        },
         episodeNumber: {
             type: Number,
-            required: [true, 'Episode number is required'],
         },
         scheduledDate: {
             type: Date,
-            required: [true, 'Scheduled date is required'],
         },
         scheduledTime: {
             type: String,
@@ -106,6 +136,31 @@ const podcastSchema = new Schema<IPodcast>(
         timestamps: true,
     }
 );
+
+// Custom validation based on category
+podcastSchema.pre('save', function(next) {
+    if (this.category === 'upcoming') {
+        // For upcoming: Only thumbnail is mandatory
+        if (!this.thumbnailImage) {
+            return next(new Error('Thumbnail is required for upcoming podcasts'));
+        }
+    } else if (this.category === 'past') {
+        // For past: All fields are mandatory
+        if (!this.title) return next(new Error('Title is required for past podcasts'));
+        if (!this.description) return next(new Error('Description is required for past podcasts'));
+        if (!this.episodeNumber) return next(new Error('Episode number is required for past podcasts'));
+        if (!this.scheduledDate) return next(new Error('Scheduled date is required for past podcasts'));
+        
+        // Check if either legacy guest or new guests array has data
+        const hasLegacyGuest = this.guestName && this.guestTitle;
+        const hasNewGuests = this.guests && this.guests.length > 0;
+        
+        if (!hasLegacyGuest && !hasNewGuests) {
+            return next(new Error('At least one guest is required for past podcasts'));
+        }
+    }
+    next();
+});
 
 // Index for efficient querying
 podcastSchema.index({ category: 1, scheduledDate: -1 });
