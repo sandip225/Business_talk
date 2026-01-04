@@ -43,8 +43,9 @@ app.use(cors({
             return callback(null, true);
         }
 
-        // Allow custom domain
-        if (origin.includes('businesstalkabcdeepalabhatt.com')) {
+        // Allow custom domains
+        if (origin.includes('businesstalkabcdeepalabhatt.com') ||
+            origin.includes('businesstalkwithdeepakbhatt.com')) {
             return callback(null, true);
         }
 
