@@ -43,6 +43,11 @@ app.use(cors({
             return callback(null, true);
         }
 
+        // Allow custom domain
+        if (origin.includes('businesstalkabcdeepalabhatt.com')) {
+            return callback(null, true);
+        }
+
         // Allow Netlify and Vercel deployments
         if (origin.includes('.netlify.app') || origin.includes('.vercel.app')) {
             return callback(null, true);
