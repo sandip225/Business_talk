@@ -3,17 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Save, ArrowLeft, Loader2, Info, Plus, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../../store/useStore';
+import { aboutUsAPI, AboutUsContent } from '../../services/api';
 import logoImage from '../../assets/logo.jpg';
 
-// Store About Us content in localStorage for simplicity (could be moved to backend later)
-const ABOUT_STORAGE_KEY = 'businessTalk_aboutContent';
-
-interface AboutContent {
-    title: string;
-    paragraphs: string[];
-}
-
-const defaultContent: AboutContent = {
+const defaultContent: AboutUsContent = {
     title: 'About Business Talk',
     paragraphs: [
         'Business Talk is your premier podcast for cutting-edge trends, groundbreaking research, valuable insights from notable books, and engaging discussions from the realms of business and academia.',
@@ -24,9 +17,11 @@ const defaultContent: AboutContent = {
 export default function AboutEditor() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuthStore();
-    const [content, setContent] = useState<AboutContent>(defaultContent);
+    const [content, setContent] = useState<AboutUsContent>(defaultContent);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -34,42 +29,36 @@ export default function AboutEditor() {
             return;
         }
 
-        // Load saved content from localStorage
-        const saved = localStorage.getItem(ABOUT_STORAGE_KEY);
-        if (saved) {
+        // Load content from backend
+        const fetchContent = async () => {
             try {
-                const parsed = JSON.parse(saved);
-                // Handle old format with description1/description2
-                if (parsed.description1) {
-                    setContent({
-                        title: parsed.title || defaultContent.title,
-                        paragraphs: [parsed.description1, parsed.description2].filter(Boolean),
-                    });
-                } else {
-                    setContent(parsed);
-                }
-            } catch (e) {
-                console.error('Error loading saved content:', e);
+                setIsLoading(true);
+                const response = await aboutUsAPI.get();
+                setContent(response.data);
+            } catch (err) {
+                console.error('Error loading About Us content:', err);
+                setError('Failed to load content. Using default content.');
+                // Keep default content on error
+            } finally {
+                setIsLoading(false);
             }
-        }
+        };
+
+        fetchContent();
     }, [isAuthenticated, navigate]);
 
     const handleSave = async () => {
         setIsSaving(true);
         setSaveSuccess(false);
+        setError(null);
 
         try {
-            // Save to localStorage
-            localStorage.setItem(ABOUT_STORAGE_KEY, JSON.stringify(content));
-
-            // Simulate save delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-
+            await aboutUsAPI.update(content);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
-        } catch (error) {
-            console.error('Error saving:', error);
-            alert('Failed to save changes');
+        } catch (err: any) {
+            console.error('Error saving:', err);
+            setError(err.response?.data?.message || 'Failed to save changes');
         } finally {
             setIsSaving(false);
         }
@@ -96,6 +85,14 @@ export default function AboutEditor() {
             paragraphs: prev.paragraphs.map((p, i) => (i === index ? value : p)),
         }));
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -207,6 +204,11 @@ export default function AboutEditor() {
                                 {saveSuccess && (
                                     <span className="text-green-600 text-sm font-medium">
                                         ✓ Changes saved successfully!
+                                    </span>
+                                )}
+                                {error && (
+                                    <span className="text-red-600 text-sm font-medium">
+                                        ✗ {error}
                                     </span>
                                 )}
                             </div>

@@ -1,8 +1,38 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import logoImage from '../assets/logo.jpg';
 import StayUpdated from '../components/layout/StayUpdated';
+import { aboutUsAPI, AboutUsContent } from '../services/api';
+
+const defaultContent: AboutUsContent = {
+    title: 'About Business Talk',
+    paragraphs: [
+        'Business Talk is your premier podcast for cutting-edge trends, groundbreaking research, valuable insights from notable books, and engaging discussions from the realms of business and academia.',
+        'Whether you\'re an academic scholar, researcher, business professional, or entrepreneur, our episodes will inspire you to question the status quo and spark actionable ideas. Our goal is to deliver valuable research insights from the world\'s renowned scholars, sharing their unique perspectives and expertise.',
+    ],
+};
 
 export default function AboutUs() {
+    const [content, setContent] = useState<AboutUsContent>(defaultContent);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const response = await aboutUsAPI.get();
+                setContent(response.data);
+            } catch (error) {
+                console.error('Error loading About Us content:', error);
+                // Keep default content on error
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchContent();
+    }, []);
+
     return (
         <div className="min-h-screen bg-white">
             {/* Hero Section - Matching Podcasts styling */}
@@ -18,7 +48,8 @@ export default function AboutUs() {
                         className="text-center"
                     >
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                            About <span className="text-gold-400">Business Talk</span>
+                            {isLoading ? 'About Business Talk' : content.title.replace('About ', '')}
+                            {!isLoading && <span className="text-gold-400">{content.title.includes('About') ? '' : ' Business Talk'}</span>}
                         </h1>
                     </motion.div>
                 </div>
@@ -42,20 +73,20 @@ export default function AboutUs() {
                             />
                         </div>
 
-                        {/* Business Talk Description - Responsive: left on mobile, justify on desktop */}
-                        <div className="space-y-6">
-                            <p className="text-gray-700 text-base text-justify" style={{ lineHeight: '1.75rem' }}>
-                                Business Talk is your premier podcast for cutting-edge trends, groundbreaking research,
-                                valuable insights from notable books, and engaging discussions from the realms of
-                                business and academia.
-                            </p>
-                            <p className="text-gray-700 text-base text-justify" style={{ lineHeight: '1.75rem' }}>
-                                Whether you're an academic scholar, researcher, business professional, or entrepreneur,
-                                our episodes will inspire you to question the status quo and spark actionable ideas.
-                                Our goal is to deliver valuable research insights from the world's renowned scholars,
-                                sharing their unique perspectives and expertise.
-                            </p>
-                        </div>
+                        {/* Business Talk Description - Dynamic content */}
+                        {isLoading ? (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {content.paragraphs.map((paragraph, index) => (
+                                    <p key={index} className="text-gray-700 text-base text-justify" style={{ lineHeight: '1.75rem' }}>
+                                        {paragraph}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
                     </motion.div>
                 </div>
             </section>

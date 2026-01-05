@@ -25,6 +25,7 @@ export interface IPodcast extends Document {
     spotifyUrl?: string;
     applePodcastUrl?: string;
     amazonMusicUrl?: string;
+    audibleUrl?: string;
     soundcloudUrl?: string;
     thumbnailImage?: string;
     tags: string[];
@@ -116,6 +117,10 @@ const podcastSchema = new Schema<IPodcast>(
             type: String,
             trim: true,
         },
+        audibleUrl: {
+            type: String,
+            trim: true,
+        },
         soundcloudUrl: {
             type: String,
             trim: true,
@@ -138,7 +143,7 @@ const podcastSchema = new Schema<IPodcast>(
 );
 
 // Custom validation based on category
-podcastSchema.pre('save', function(next) {
+podcastSchema.pre('save', function (next) {
     if (this.category === 'upcoming') {
         // For upcoming: Only thumbnail is mandatory
         if (!this.thumbnailImage) {
@@ -150,11 +155,11 @@ podcastSchema.pre('save', function(next) {
         if (!this.description) return next(new Error('Description is required for past podcasts'));
         if (!this.episodeNumber) return next(new Error('Episode number is required for past podcasts'));
         if (!this.scheduledDate) return next(new Error('Scheduled date is required for past podcasts'));
-        
+
         // Check if either legacy guest or new guests array has data
         const hasLegacyGuest = this.guestName && this.guestTitle;
         const hasNewGuests = this.guests && this.guests.length > 0;
-        
+
         if (!hasLegacyGuest && !hasNewGuests) {
             return next(new Error('At least one guest is required for past podcasts'));
         }

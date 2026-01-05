@@ -239,4 +239,16 @@ export const importAPI = {
     getSampleFormat: () => api.get('/import/sample'),
 };
 
+// About Us Types
+export interface AboutUsContent {
+    title: string;
+    paragraphs: string[];
+}
+
+// About Us API
+export const aboutUsAPI = {
+    get: () => api.get<AboutUsContent>('/aboutus'),
+    update: (data: AboutUsContent) => api.put<{ message: string; aboutUs: AboutUsContent }>('/aboutus', data),
+};
+
 export default api;

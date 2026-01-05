@@ -11,6 +11,7 @@ import podcastRoutes from './routes/podcast.routes';
 import blogRoutes from './routes/blog.routes';
 import categoryRoutes from './routes/category.routes';
 import importRoutes from './routes/import.routes';
+import aboutUsRoutes from './routes/aboutus.routes';
 
 const app = express();
 
@@ -102,6 +103,10 @@ app.get('/', (_req, res) => {
                 update: 'PUT /api/blogs/:id (admin)',
                 delete: 'DELETE /api/blogs/:id (admin)',
             },
+            aboutUs: {
+                get: 'GET /api/aboutus',
+                update: 'PUT /api/aboutus (admin)',
+            },
         },
         documentation: 'See README.md for full API documentation',
     });
@@ -118,6 +123,7 @@ app.use('/api/podcasts', podcastRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/aboutus', aboutUsRoutes);
 
 // 404 handler
 app.use((_req, res) => {
