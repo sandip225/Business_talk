@@ -145,6 +145,21 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
             query.category = category;
         }
 
+        // Add search support
+        if (req.query.search) {
+            const searchRegex = new RegExp(req.query.search as string, 'i');
+            query.$or = [
+                { title: searchRegex },
+                { description: searchRegex },
+                { guestName: searchRegex },
+                { guestTitle: searchRegex },
+                { guestInstitution: searchRegex },
+                { 'guests.name': searchRegex },
+                { 'guests.title': searchRegex },
+                { 'guests.institution': searchRegex }
+            ];
+        }
+
         const skip = (pageNum - 1) * limitNum;
 
         const [podcasts, total] = await Promise.all([

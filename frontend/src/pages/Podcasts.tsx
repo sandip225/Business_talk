@@ -2,66 +2,92 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, Loader2 } from 'lucide-react';
 import { podcastAPI, Podcast } from '../services/api';
-import { usePodcastStore } from '../store/useStore';
 import StayUpdated from '../components/layout/StayUpdated';
 import PodcastCard from '../components/podcast/PodcastCard';
 
-// Number of items per row (3 on desktop) * 2 rows = 6 items initially
-const ITEMS_PER_LOAD = 6;
-
 export default function Podcasts() {
-    const { upcomingPodcasts, pastPodcasts, setPodcasts, setLoading, isLoading, shouldRefetch, clearCache } = usePodcastStore();
+    const [podcasts, setPodcasts] = useState<Podcast[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [displayCount, setDisplayCount] = useState(ITEMS_PER_LOAD);
+
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [retryCount, setRetryCount] = useState(0);
+
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
-    const handleRetry = () => {
-        clearCache();
+    // Initial fetch (Limit 2) or Search fetch
+    const fetchInitial = useCallback(async (query: string = '') => {
+        setIsLoading(true);
         setError(null);
-        setRetryCount(prev => prev + 1);
-    };
+        setPage(1);
+        try {
+            // Initial load requests 2 items as per requirement
+            const limit = 2;
+            const response = await podcastAPI.getAll({
+                limit,
+                page: 1,
+                search: query
+            });
 
+            const newPodcasts = response.data.podcasts || [];
+            setPodcasts(newPodcasts);
+
+            // If we got fewer than limit, we reached the end
+            setHasMore(newPodcasts.length >= limit && response.data.pagination.page < response.data.pagination.pages);
+        } catch (err) {
+            console.error('Error fetching podcasts:', err);
+            setError('Failed to load podcasts. Please try again later.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Load More fetch (Limit 4)
+    const loadMoreItems = useCallback(async () => {
+        if (isLoadingMore || !hasMore) return;
+
+        setIsLoadingMore(true);
+        try {
+            const nextPage = page + 1;
+            const limit = 4; // Subsequent loads batch of 4
+
+            const response = await podcastAPI.getAll({
+                limit,
+                page: nextPage,
+                search: searchTerm
+            });
+
+            const newPodcasts = response.data.podcasts || [];
+            setPodcasts(prev => [...prev, ...newPodcasts]);
+            setPage(nextPage);
+
+            setHasMore(newPodcasts.length === limit && response.data.pagination.page < response.data.pagination.pages);
+        } catch (err) {
+            console.error('Error loading more podcasts:', err);
+            // Don't set main error, just stop loading more
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [page, hasMore, searchTerm, isLoadingMore]);
+
+    // Debounce search
     useEffect(() => {
-        const fetchPodcasts = async () => {
-            // Only fetch if cache is expired, empty, OR simply partially loaded (from Home page)
-            // Heuristic: if we have very few past podcasts (< 10) but likely have more, we should refetch
-            const isPartialCache = pastPodcasts.length > 0 && pastPodcasts.length < 10;
+        const timer = setTimeout(() => {
+            fetchInitial(searchTerm);
+        }, 500);
 
-            if (!shouldRefetch() && !isPartialCache && retryCount === 0) {
-                return;
-            }
-
-            setLoading(true);
-            try {
-                // Fetch ALL podcasts for the dedicated page
-                const response = await podcastAPI.getAll({ limit: 500 });
-                setPodcasts(response.data.podcasts);
-                setError(null);
-            } catch (err) {
-                console.error('Error fetching podcasts:', err);
-                setError('Failed to load podcasts. Please try again later.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPodcasts();
-    }, [setPodcasts, setLoading, shouldRefetch, pastPodcasts.length, retryCount, clearCache]);
-
-    // Reset display count when search term changes
-    useEffect(() => {
-        setDisplayCount(ITEMS_PER_LOAD);
-    }, [searchTerm]);
+        return () => clearTimeout(timer);
+    }, [searchTerm, fetchInitial]);
 
     // Intersection Observer for infinite scroll
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
                 const first = entries[0];
-                if (first.isIntersecting && !isLoadingMore) {
+                if (first.isIntersecting && hasMore && !isLoading && !isLoadingMore) {
                     loadMoreItems();
                 }
             },
@@ -78,40 +104,7 @@ export default function Podcasts() {
                 observer.unobserve(currentRef);
             }
         };
-    }, [displayCount, isLoadingMore]);
-
-    // Load more items function
-    const loadMoreItems = useCallback(() => {
-        setIsLoadingMore(true);
-        // Simulate a small delay for smooth UX
-        setTimeout(() => {
-            setDisplayCount(prev => prev + ITEMS_PER_LOAD);
-            setIsLoadingMore(false);
-        }, 300);
-    }, []);
-
-    // Filter podcasts based on search
-    const filterBySearch = (podcastList: Podcast[]) => {
-        if (!searchTerm.trim()) return podcastList;
-
-        const search = searchTerm.toLowerCase();
-        return podcastList.filter(
-            (podcast) =>
-                podcast.title.toLowerCase().includes(search) ||
-                podcast.guestName?.toLowerCase().includes(search) ||
-                podcast.description.toLowerCase().includes(search) ||
-                podcast.guestTitle?.toLowerCase().includes(search) ||
-                podcast.guestInstitution?.toLowerCase().includes(search) ||
-                podcast.guests?.some(guest =>
-                    guest.name.toLowerCase().includes(search) ||
-                    guest.title.toLowerCase().includes(search) ||
-                    guest.institution?.toLowerCase().includes(search)
-                )
-        );
-    };
-
-    const filteredUpcoming = filterBySearch(upcomingPodcasts);
-    const filteredPast = filterBySearch(pastPodcasts);
+    }, [hasMore, isLoading, isLoadingMore, loadMoreItems]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-cream-50 to-white">
@@ -162,7 +155,7 @@ export default function Podcasts() {
                 <div className="py-16 text-center">
                     <p className="text-red-600 mb-4">{error}</p>
                     <button
-                        onClick={handleRetry}
+                        onClick={() => fetchInitial(searchTerm)}
                         className="px-6 py-3 bg-maroon-700 text-white font-semibold rounded-lg hover:bg-maroon-800 transition-colors"
                     >
                         Retry
@@ -170,30 +163,28 @@ export default function Podcasts() {
                 </div>
             ) : (
                 <>
-
-                    {/* Previous Episodes Section */}
-                    {filteredPast.length > 0 && (
+                    {/* Podcasts Grid */}
+                    {podcasts.length > 0 ? (
                         <section className="py-12 px-4 bg-gray-50">
                             <div className="max-w-7xl mx-auto">
                                 <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
                                     <div className="flex-1 min-w-0">
                                         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                                            Previous <span className="text-maroon-700">Episodes</span>
+                                            {searchTerm ? 'Search Results' : 'Latest Episodes'}
                                         </h2>
-                                        <p className="text-gray-600 mt-1 text-sm sm:text-base">Watch our previous conversations</p>
+                                        <p className="text-gray-600 mt-1 text-sm sm:text-base">
+                                            {searchTerm ? `Found ${podcasts.length} matching episodes` : 'Watch our conversations'}
+                                        </p>
                                     </div>
-                                    <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-maroon-100 text-maroon-700 font-semibold rounded-full text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
-                                        {filteredPast.length} Episodes
-                                    </span>
                                 </div>
                                 <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                                    {filteredPast.slice(0, displayCount).map((podcast: Podcast) => (
+                                    {podcasts.map((podcast: Podcast) => (
                                         <PodcastCard key={podcast._id} podcast={podcast} variant="grid" />
                                     ))}
                                 </div>
 
                                 {/* Load More Sentinel for Infinite Scroll */}
-                                {displayCount < filteredPast.length && (
+                                {hasMore && (
                                     <div
                                         ref={loadMoreRef}
                                         className="flex flex-col items-center justify-center py-12"
@@ -214,24 +205,18 @@ export default function Podcasts() {
                                                 </svg>
                                             </button>
                                         )}
-                                        <p className="text-gray-500 text-sm mt-2">
-                                            Showing {Math.min(displayCount, filteredPast.length)} of {filteredPast.length} episodes
-                                        </p>
                                     </div>
                                 )}
 
                                 {/* All Loaded Message */}
-                                {displayCount >= filteredPast.length && filteredPast.length > ITEMS_PER_LOAD && (
+                                {!hasMore && podcasts.length > 0 && (
                                     <div className="text-center py-8">
-                                        <p className="text-gray-500">All {filteredPast.length} episodes loaded</p>
+                                        <p className="text-gray-500">All episodes loaded</p>
                                     </div>
                                 )}
                             </div>
                         </section>
-                    )}
-
-                    {/* No Results */}
-                    {filteredUpcoming.length === 0 && filteredPast.length === 0 && (
+                    ) : (
                         <div className="py-16 text-center">
                             <Filter className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                             <h3 className="text-xl font-semibold text-gray-700 mb-2">No podcasts found</h3>

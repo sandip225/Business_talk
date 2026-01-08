@@ -48,8 +48,16 @@ export default function AboutUs() {
                         className="text-center"
                     >
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                            {isLoading ? 'About Business Talk' : content.title.replace('About ', '')}
-                            {!isLoading && <span className="text-gold-400">{content.title.includes('About') ? '' : ' Business Talk'}</span>}
+                            {isLoading ? 'About Business Talk' : (
+                                <>
+                                    {content.title.split('Business Talk').map((part, i, arr) => (
+                                        <span key={i}>
+                                            {part}
+                                            {i < arr.length - 1 && <span className="text-gold-400">Business Talk</span>}
+                                        </span>
+                                    ))}
+                                </>
+                            )}
                         </h1>
                     </motion.div>
                 </div>

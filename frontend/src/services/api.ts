@@ -72,7 +72,7 @@ export const authAPI = {
 
 // Podcast API
 export const podcastAPI = {
-    getAll: (params?: { category?: string; limit?: number; page?: number }) =>
+    getAll: (params?: { category?: string; limit?: number; page?: number; search?: string }) =>
         api.get('/podcasts', { params }),
 
     getById: (id: string) => api.get(`/podcasts/${id}`),
