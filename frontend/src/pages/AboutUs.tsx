@@ -48,16 +48,7 @@ export default function AboutUs() {
                         className="text-center"
                     >
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                            {isLoading ? 'About Business Talk' : (
-                                <>
-                                    {content.title.split('Business Talk').map((part, i, arr) => (
-                                        <span key={i}>
-                                            {part}
-                                            {i < arr.length - 1 && <span className="text-gold-400">Business Talk</span>}
-                                        </span>
-                                    ))}
-                                </>
-                            )}
+                            About <span className="text-gold-400">Business Talk</span>
                         </h1>
                     </motion.div>
                 </div>

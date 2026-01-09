@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -12,13 +12,20 @@ export default function Home() {
     const { upcomingPodcasts, pastPodcasts, setUpcomingPodcasts, setPastPodcasts, setLoading, isLoading, shouldRefetch, clearCache } = usePodcastStore();
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
+    const [displayedPastCount, setDisplayedPastCount] = useState(2);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    const HOME_PAST_LIMIT = 8;
+    const INITIAL_LOAD = 2;
+    const SECOND_LOAD = 4;
+    const BATCH_SIZE = 6;
 
     const handleRetry = () => {
         clearCache(); // Clear cache to force fresh fetch
         setError(null);
         setRetryCount(prev => prev + 1);
+        setDisplayedPastCount(2);
     };
 
     useEffect(() => {
@@ -30,15 +37,21 @@ export default function Home() {
 
             setLoading(true);
             try {
-                // Fetch separately to optimize load
+                // Fetch all podcasts
                 const [upcomingRes, pastRes] = await Promise.all([
                     podcastAPI.getAll({ category: 'upcoming' }),
-                    podcastAPI.getAll({ category: 'past', limit: HOME_PAST_LIMIT })
+                    podcastAPI.getAll({ category: 'past' })
                 ]);
 
                 setUpcomingPodcasts(upcomingRes.data.podcasts || []);
                 setPastPodcasts(pastRes.data.podcasts || []);
                 setError(null);
+                
+                // Load first 2, then immediately load 4 more
+                setDisplayedPastCount(INITIAL_LOAD);
+                setTimeout(() => {
+                    setDisplayedPastCount(INITIAL_LOAD + SECOND_LOAD);
+                }, 100);
             } catch (err) {
                 console.error('Error fetching podcasts:', err);
                 setError('Failed to load podcasts. Please try again later.');
@@ -50,9 +63,42 @@ export default function Home() {
         fetchPodcasts();
     }, [setUpcomingPodcasts, setPastPodcasts, setLoading, shouldRefetch, retryCount, clearCache]);
 
-    // Get all upcoming podcasts and top 50 past podcasts
+    // Infinite scroll for past podcasts
+    const loadMorePodcasts = useCallback(() => {
+        if (isLoadingMore || displayedPastCount >= pastPodcasts.length) return;
+        
+        setIsLoadingMore(true);
+        setTimeout(() => {
+            setDisplayedPastCount(prev => Math.min(prev + BATCH_SIZE, pastPodcasts.length));
+            setIsLoadingMore(false);
+        }, 300);
+    }, [displayedPastCount, pastPodcasts.length, isLoadingMore]);
+
+    // Setup intersection observer for infinite scroll
+    useEffect(() => {
+        if (observerRef.current) observerRef.current.disconnect();
+
+        observerRef.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !isLoading && !isLoadingMore) {
+                    loadMorePodcasts();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) observerRef.current.disconnect();
+        };
+    }, [loadMorePodcasts, isLoading, isLoadingMore]);
+
+    // Get all upcoming podcasts and displayed past podcasts
     const allUpcoming = upcomingPodcasts;
-    const top50Past = pastPodcasts;
+    const displayedPast = pastPodcasts.slice(0, displayedPastCount);
 
     return (
         <div className="min-h-screen bg-white">
@@ -199,16 +245,30 @@ export default function Home() {
                                     Retry
                                 </button>
                             </div>
-                        ) : top50Past.length === 0 ? (
+                        ) : displayedPast.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-gray-500">No previous podcasts available yet.</p>
                             </div>
                         ) : (
-                            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                                {top50Past.map((podcast: Podcast) => (
-                                    <PodcastCard key={podcast._id} podcast={podcast} variant="grid" />
-                                ))}
-                            </div>
+                            <>
+                                <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+                                    {displayedPast.map((podcast: Podcast) => (
+                                        <PodcastCard key={podcast._id} podcast={podcast} variant="grid" />
+                                    ))}
+                                </div>
+                                
+                                {/* Infinite scroll trigger */}
+                                {displayedPastCount < pastPodcasts.length && (
+                                    <div ref={loadMoreRef} className="flex justify-center mt-8">
+                                        {isLoadingMore && (
+                                            <div className="flex items-center gap-2 text-maroon-700">
+                                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-maroon-700"></div>
+                                                <span>Loading more podcasts...</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </motion.div>
                 </div>
