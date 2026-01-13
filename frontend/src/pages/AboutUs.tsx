@@ -17,6 +17,11 @@ export default function AboutUs() {
     const [content, setContent] = useState<AboutUsContent>(defaultContent);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Set page title
+    useEffect(() => {
+        document.title = "About | Business Talk - The World's Premier Research-Focused Podcast Series";
+    }, []);
+
     useEffect(() => {
         const fetchContent = async () => {
             try {

@@ -28,6 +28,11 @@ export default function AdminDashboard() {
     const { user, isAuthenticated, logout } = useAuthStore();
     const { podcasts, setPodcasts, removePodcast } = usePodcastStore();
     const [isLoading, setIsLoading] = useState(true);
+
+    // Set page title
+    useEffect(() => {
+        document.title = "Admin Dashboard | Business Talk";
+    }, []);
     const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
     const [blogStats, setBlogStats] = useState({ total: 0, published: 0, drafts: 0 });
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');

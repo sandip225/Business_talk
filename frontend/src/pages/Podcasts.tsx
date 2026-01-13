@@ -18,6 +18,11 @@ export default function Podcasts() {
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
+    // Set page title
+    useEffect(() => {
+        document.title = "Podcasts | Business Talk - The World's Premier Research-Focused Podcast Series";
+    }, []);
+
     // Initial fetch - ONLY PAST episodes with compact mode for faster loading
     const fetchInitial = useCallback(async (query: string = '') => {
         setIsLoading(true);

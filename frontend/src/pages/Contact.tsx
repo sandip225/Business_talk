@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Send, Globe } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Contact() {
     const [formData, setFormData] = useState({
@@ -10,6 +10,11 @@ export default function Contact() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+
+    // Set page title
+    useEffect(() => {
+        document.title = "Contact | Business Talk - The World's Premier Research-Focused Podcast Series";
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

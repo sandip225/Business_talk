@@ -13,6 +13,11 @@ export default function Blog() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Set page title
+    useEffect(() => {
+        document.title = "Blog | Business Talk - The World's Premier Research-Focused Podcast Series";
+    }, []);
+
     // Fetch blogs from API
     useEffect(() => {
         const fetchBlogs = async () => {

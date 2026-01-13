@@ -21,6 +21,11 @@ export default function Home() {
     const SECOND_LOAD = 4;
     const BATCH_SIZE = 6;
 
+    // Set page title
+    useEffect(() => {
+        document.title = "Home | Business Talk - The World's Premier Research-Focused Podcast Series";
+    }, []);
+
     const handleRetry = () => {
         clearCache(); // Clear cache to force fresh fetch
         setError(null);

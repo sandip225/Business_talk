@@ -34,6 +34,15 @@ export default function BlogPost() {
         fetchBlog();
     }, [id]);
 
+    // Set page title based on blog post
+    useEffect(() => {
+        if (post) {
+            document.title = `${post.title} | Business Talk - The World's Premier Research-Focused Podcast Series`;
+        } else {
+            document.title = "Blog | Business Talk - The World's Premier Research-Focused Podcast Series";
+        }
+    }, [post]);
+
     // Format date for display
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
