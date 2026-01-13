@@ -23,7 +23,7 @@ export default function Home() {
 
     // Set page title
     useEffect(() => {
-        document.title = "Business Talk | Home";
+        document.title = "Business Talk | The World's Premier Research-Focused Podcast Series";
     }, []);
 
     const handleRetry = () => {
