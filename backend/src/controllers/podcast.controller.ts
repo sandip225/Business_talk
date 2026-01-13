@@ -164,13 +164,15 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
         const skip = (pageNum - 1) * limitNum;
 
         // Build projection based on request
-        // - compact=true: Exclude all images (for admin lists where images aren't displayed)
-        // - default: Include all images (needed to show thumbnails and guest photos)
+        // - compact=true: Exclude ONLY thumbnailImage (large promotional image ~100KB+)
+        //   but KEEP guestImage and guests.image (smaller profile pictures needed for display)
+        // - default: Include all images
         let selectFields: Record<string, number> = {};
         
         if (req.query.compact === 'true') {
-            // Admin list mode: exclude all large images for performance
-            selectFields = { thumbnailImage: 0, guestImage: 0, 'guests.image': 0 };
+            // Compact mode: exclude only the large thumbnailImage
+            // Keep guest profile images since they're needed for podcast cards
+            selectFields = { thumbnailImage: 0 };
         }
         // Default: Include all fields including images
 
