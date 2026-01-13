@@ -18,20 +18,21 @@ export default function Podcasts() {
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
-    // Initial fetch (Limit 2) or Search fetch - ONLY PAST episodes
+    // Initial fetch - ONLY PAST episodes with compact mode for faster loading
     const fetchInitial = useCallback(async (query: string = '') => {
         setIsLoading(true);
         setError(null);
         setPage(1);
         try {
-            // Initial load requests 2 items as per requirement
-            // IMPORTANT: Only fetch PAST episodes - upcoming should NOT appear here
-            const limit = 2;
+            // Initial load with compact: true to exclude large base64 images
+            // This makes loading MUCH faster - thumbnails will use YouTube images
+            const limit = 12;
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit,
                 page: 1,
-                search: query
+                search: query,
+                compact: true  // Exclude large images for faster loading
             });
 
             const newPodcasts = response.data.podcasts || [];
@@ -47,21 +48,23 @@ export default function Podcasts() {
         }
     }, []);
 
-    // Load More fetch (Limit 4) - ONLY PAST episodes
+    // Load More fetch - ONLY PAST episodes with compact mode for faster loading
     const loadMoreItems = useCallback(async () => {
         if (isLoadingMore || !hasMore) return;
 
         setIsLoadingMore(true);
         try {
             const nextPage = page + 1;
-            const limit = 4; // Subsequent loads batch of 4
+            const limit = 12; // Load 12 at a time for better UX
 
             // IMPORTANT: Only fetch PAST episodes - upcoming should NOT appear here
+            // Use compact: true to exclude large base64 images for faster loading
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit,
                 page: nextPage,
-                search: searchTerm
+                search: searchTerm,
+                compact: true  // Exclude large images for faster loading
             });
 
             const newPodcasts = response.data.podcasts || [];
