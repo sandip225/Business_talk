@@ -18,15 +18,17 @@ export default function Podcasts() {
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
-    // Initial fetch (Limit 2) or Search fetch
+    // Initial fetch (Limit 2) or Search fetch - ONLY PAST episodes
     const fetchInitial = useCallback(async (query: string = '') => {
         setIsLoading(true);
         setError(null);
         setPage(1);
         try {
             // Initial load requests 2 items as per requirement
+            // IMPORTANT: Only fetch PAST episodes - upcoming should NOT appear here
             const limit = 2;
             const response = await podcastAPI.getAll({
+                category: 'past',
                 limit,
                 page: 1,
                 search: query
@@ -45,7 +47,7 @@ export default function Podcasts() {
         }
     }, []);
 
-    // Load More fetch (Limit 4)
+    // Load More fetch (Limit 4) - ONLY PAST episodes
     const loadMoreItems = useCallback(async () => {
         if (isLoadingMore || !hasMore) return;
 
@@ -54,7 +56,9 @@ export default function Podcasts() {
             const nextPage = page + 1;
             const limit = 4; // Subsequent loads batch of 4
 
+            // IMPORTANT: Only fetch PAST episodes - upcoming should NOT appear here
             const response = await podcastAPI.getAll({
+                category: 'past',
                 limit,
                 page: nextPage,
                 search: searchTerm
@@ -121,10 +125,10 @@ export default function Podcasts() {
                         className="text-center"
                     >
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                            All <span className="text-gold-400">Podcasts</span>
+                            Previous <span className="text-gold-400">Episodes</span>
                         </h1>
                         <p className="text-lg text-white/80 max-w-2xl mx-auto">
-                            Explore our complete collection of insightful conversations with world-renowned scholars and thought leaders.
+                            Explore our complete collection of past conversations with world-renowned scholars and thought leaders.
                         </p>
                     </motion.div>
                 </div>
