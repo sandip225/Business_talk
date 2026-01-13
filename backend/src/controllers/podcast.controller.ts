@@ -163,15 +163,26 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
 
         const skip = (pageNum - 1) * limitNum;
 
-        // Exclude large base64 image fields from list query to reduce response size
-        // unless explicitly requested with includeImages=true
-        const selectFields = includeImages === 'true' 
-            ? {} 
-            : { thumbnailImage: 0, guestImage: 0, 'guests.image': 0 };
+        // Build projection based on request
+        // - includeImages=true: Include everything (for single podcast detail views)
+        // - compact=true: Exclude all images (for admin lists)
+        // - default: Include thumbnailImage (needed for display), exclude guestImage
+        let selectFields: Record<string, number> = {};
+        
+        if (includeImages === 'true') {
+            // Include all fields
+            selectFields = {};
+        } else if (req.query.compact === 'true') {
+            // Admin list mode: exclude all large images for performance
+            selectFields = { thumbnailImage: 0, guestImage: 0, 'guests.image': 0 };
+        } else {
+            // Default: Keep thumbnailImage (needed to show podcast cards), exclude guest images
+            selectFields = { guestImage: 0, 'guests.image': 0 };
+        }
 
         const [podcasts, total] = await Promise.all([
             Podcast.find(query)
-                .select(selectFields)
+                .select(Object.keys(selectFields).length > 0 ? selectFields : {})
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limitNum),
