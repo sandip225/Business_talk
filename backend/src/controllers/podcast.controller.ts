@@ -120,8 +120,8 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
     try {
         const { category, limit, page = 1 } = req.query;
         const pageNum = parseInt(page as string, 10);
-        // Default limit to 50 to prevent huge responses
-        const limitNum = limit ? parseInt(limit as string, 10) : 50;
+        // No default limit - return all podcasts unless limit is specified
+        const limitNum = limit ? parseInt(limit as string, 10) : 0;
 
         // Use mock data if DB not connected
         if (!isDBConnected()) {
@@ -174,12 +174,18 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
         }
         // Default: Include all fields including images
 
+        // Build the query - if limitNum is 0, don't apply limit (return all)
+        let podcastQuery = Podcast.find(query)
+            .select(Object.keys(selectFields).length > 0 ? selectFields : {})
+            .sort({ createdAt: -1 });
+        
+        // Only apply skip/limit if limitNum > 0
+        if (limitNum > 0) {
+            podcastQuery = podcastQuery.skip(skip).limit(limitNum);
+        }
+
         const [podcasts, total] = await Promise.all([
-            Podcast.find(query)
-                .select(Object.keys(selectFields).length > 0 ? selectFields : {})
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limitNum),
+            podcastQuery,
             Podcast.countDocuments(query),
         ]);
 
@@ -187,9 +193,9 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
             podcasts,
             pagination: {
                 total,
-                page: pageNum,
-                pages: Math.ceil(total / limitNum),
-                limit: limitNum,
+                page: limitNum > 0 ? pageNum : 1,
+                pages: limitNum > 0 ? Math.ceil(total / limitNum) : 1,
+                limit: limitNum > 0 ? limitNum : total,
             },
         });
     } catch (error) {

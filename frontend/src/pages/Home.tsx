@@ -37,7 +37,7 @@ export default function Home() {
 
             setLoading(true);
             try {
-                // Fetch all podcasts
+                // Fetch all podcasts - no limit to get all upcoming and past
                 const [upcomingRes, pastRes] = await Promise.all([
                     podcastAPI.getAll({ category: 'upcoming' }),
                     podcastAPI.getAll({ category: 'past' })

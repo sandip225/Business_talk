@@ -46,6 +46,7 @@ export default function AdminDashboard() {
             setIsLoading(true);
             try {
                 // Use compact: true to exclude large image data for faster admin list loading
+                // No limit - get all podcasts
                 const [podcastsRes, statsRes] = await Promise.all([
                     podcastAPI.getAll({ compact: true }),
                     podcastAPI.getStats(),
