@@ -13,7 +13,7 @@ export default function Contact() {
 
     // Set page title
     useEffect(() => {
-        document.title = "Contact | Business Talk - The World's Premier Research-Focused Podcast Series";
+        document.title = "Business Talk | Contact";
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {

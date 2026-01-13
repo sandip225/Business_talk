@@ -20,7 +20,7 @@ export default function Podcasts() {
 
     // Set page title
     useEffect(() => {
-        document.title = "Podcasts | Business Talk - The World's Premier Research-Focused Podcast Series";
+        document.title = "Business Talk | Podcasts";
     }, []);
 
     // Initial fetch - ONLY PAST episodes with compact mode for faster loading

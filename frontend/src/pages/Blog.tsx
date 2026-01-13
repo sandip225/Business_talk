@@ -15,7 +15,7 @@ export default function Blog() {
 
     // Set page title
     useEffect(() => {
-        document.title = "Blog | Business Talk - The World's Premier Research-Focused Podcast Series";
+        document.title = "Business Talk | Blog";
     }, []);
 
     // Fetch blogs from API

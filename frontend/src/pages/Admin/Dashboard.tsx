@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
     // Set page title
     useEffect(() => {
-        document.title = "Admin Dashboard | Business Talk";
+        document.title = "Business Talk | Admin Dashboard";
     }, []);
     const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
     const [blogStats, setBlogStats] = useState({ total: 0, published: 0, drafts: 0 });

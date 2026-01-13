@@ -19,7 +19,7 @@ export default function AboutUs() {
 
     // Set page title
     useEffect(() => {
-        document.title = "About | Business Talk - The World's Premier Research-Focused Podcast Series";
+        document.title = "Business Talk | About Us";
     }, []);
 
     useEffect(() => {

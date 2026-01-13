@@ -17,7 +17,7 @@ export default function AdminLogin() {
 
     // Set page title
     useEffect(() => {
-        document.title = "Admin Login | Business Talk";
+        document.title = "Business Talk | Admin Login";
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {

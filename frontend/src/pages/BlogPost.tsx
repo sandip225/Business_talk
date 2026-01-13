@@ -37,9 +37,9 @@ export default function BlogPost() {
     // Set page title based on blog post
     useEffect(() => {
         if (post) {
-            document.title = `${post.title} | Business Talk - The World's Premier Research-Focused Podcast Series`;
+            document.title = `Business Talk | ${post.title}`;
         } else {
-            document.title = "Blog | Business Talk - The World's Premier Research-Focused Podcast Series";
+            document.title = "Business Talk | Blog";
         }
     }, [post]);
 
