@@ -118,9 +118,10 @@ const mockPodcasts = [
 // Get all podcasts (public)
 export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { category, limit, page = 1 } = req.query;
+        const { category, limit, page = 1, includeImages } = req.query;
         const pageNum = parseInt(page as string, 10);
-        const limitNum = limit ? parseInt(limit as string, 10) : 500;
+        // Default limit to 50 to prevent huge responses
+        const limitNum = limit ? parseInt(limit as string, 10) : 50;
 
         // Use mock data if DB not connected
         if (!isDBConnected()) {
@@ -162,8 +163,15 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
 
         const skip = (pageNum - 1) * limitNum;
 
+        // Exclude large base64 image fields from list query to reduce response size
+        // unless explicitly requested with includeImages=true
+        const selectFields = includeImages === 'true' 
+            ? {} 
+            : { thumbnailImage: 0, guestImage: 0, 'guests.image': 0 };
+
         const [podcasts, total] = await Promise.all([
             Podcast.find(query)
+                .select(selectFields)
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limitNum),
