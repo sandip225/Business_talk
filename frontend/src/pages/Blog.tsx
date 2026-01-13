@@ -1,104 +1,56 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, User, Search } from 'lucide-react';
+import { ArrowRight, Calendar, User, Search, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { blogAPI, Blog as BlogType } from '../services/api';
 
-// Sample blog posts data
-const blogPosts = [
-    {
-        id: 1,
-        title: 'The Future of Business Education: AI and Beyond',
-        excerpt: 'Explore how artificial intelligence is transforming the landscape of business education and what it means for future leaders.',
-        author: 'Deepak Bhatt',
-        date: 'December 20, 2024',
-        category: 'Education',
-        image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800',
-        readTime: '5 min read',
-    },
-    {
-        id: 2,
-        title: 'Leadership Lessons from Top Business School Professors',
-        excerpt: 'Key insights on effective leadership gathered from our conversations with distinguished academics.',
-        author: 'Deepak Bhatt',
-        date: 'December 15, 2024',
-        category: 'Leadership',
-        image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800',
-        readTime: '7 min read',
-    },
-    {
-        id: 3,
-        title: 'Understanding Digital Transformation in Enterprise',
-        excerpt: 'A comprehensive guide to navigating digital transformation challenges in modern enterprises.',
-        author: 'Deepak Bhatt',
-        date: 'December 10, 2024',
-        category: 'Technology',
-        image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800',
-        readTime: '6 min read',
-    },
-    {
-        id: 4,
-        title: 'The Psychology of Decision Making in Business',
-        excerpt: 'Research-backed insights into how successful leaders make critical business decisions.',
-        author: 'Deepak Bhatt',
-        date: 'December 5, 2024',
-        category: 'Psychology',
-        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
-        readTime: '8 min read',
-    },
-    {
-        id: 5,
-        title: 'Sustainable Business Practices for the Modern Era',
-        excerpt: 'How companies are integrating sustainability into their core business strategies.',
-        author: 'Deepak Bhatt',
-        date: 'November 28, 2024',
-        category: 'Sustainability',
-        image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800',
-        readTime: '5 min read',
-    },
-    {
-        id: 6,
-        title: 'Marketing Strategies in the Age of Social Media',
-        excerpt: 'Expert perspectives on leveraging social platforms for business growth.',
-        author: 'Deepak Bhatt',
-        date: 'November 20, 2024',
-        category: 'Marketing',
-        image: 'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800',
-        readTime: '6 min read',
-    },
-];
-
-const categories = ['All', 'Education', 'Leadership', 'Technology', 'Psychology', 'Sustainability', 'Marketing'];
+const categories = ['All', 'Education', 'Leadership', 'Technology', 'Psychology', 'Sustainability', 'Marketing', 'Business'];
 
 export default function Blog() {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
+    const [blogs, setBlogs] = useState<BlogType[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Filter blog posts based on search and category
-    const filteredPosts = useMemo(() => {
-        let filtered = blogPosts;
+    // Fetch blogs from API
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await blogAPI.getAll({
+                    category: activeCategory !== 'All' ? activeCategory : undefined,
+                    search: searchTerm || undefined,
+                    limit: 50,
+                });
+                setBlogs(response.data.blogs || []);
+            } catch (err) {
+                console.error('Error fetching blogs:', err);
+                setError('Failed to load blogs. Please try again later.');
+                setBlogs([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-        // Filter by category
-        if (activeCategory !== 'All') {
-            filtered = filtered.filter(post => post.category === activeCategory);
-        }
+        // Debounce search
+        const timeoutId = setTimeout(fetchBlogs, 300);
+        return () => clearTimeout(timeoutId);
+    }, [activeCategory, searchTerm]);
 
-        // Filter by search term
-        if (searchTerm.trim()) {
-            const search = searchTerm.toLowerCase();
-            filtered = filtered.filter(
-                post =>
-                    post.title.toLowerCase().includes(search) ||
-                    post.excerpt.toLowerCase().includes(search) ||
-                    post.category.toLowerCase().includes(search) ||
-                    post.author.toLowerCase().includes(search)
-            );
-        }
+    // Format date for display
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
 
-        return filtered;
-    }, [searchTerm, activeCategory]);
-
-    const featuredPost = filteredPosts[0];
-    const otherPosts = filteredPosts.slice(1);
+    const featuredPost = blogs[0];
+    const otherPosts = blogs.slice(1);
 
     return (
         <div className="min-h-screen bg-white">
@@ -161,11 +113,11 @@ export default function Blog() {
             </section>
 
             {/* Results Count */}
-            {(searchTerm || activeCategory !== 'All') && (
+            {(searchTerm || activeCategory !== 'All') && !isLoading && (
                 <section className="py-4 px-4 bg-gray-50">
                     <div className="max-w-7xl mx-auto">
                         <p className="text-gray-600">
-                            Showing {filteredPosts.length} article{filteredPosts.length !== 1 ? 's' : ''}
+                            Showing {blogs.length} article{blogs.length !== 1 ? 's' : ''}
                             {searchTerm && ` for "${searchTerm}"`}
                             {activeCategory !== 'All' && ` in ${activeCategory}`}
                         </p>
@@ -173,8 +125,48 @@ export default function Blog() {
                 </section>
             )}
 
+            {/* Loading State */}
+            {isLoading && (
+                <section className="py-20 px-4">
+                    <div className="flex justify-center items-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
+                        <span className="ml-3 text-gray-600">Loading articles...</span>
+                    </div>
+                </section>
+            )}
+
+            {/* Error State */}
+            {error && !isLoading && (
+                <section className="py-20 px-4">
+                    <div className="text-center">
+                        <p className="text-red-600 mb-4">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-6 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </section>
+            )}
+
+            {/* No Blogs State */}
+            {!isLoading && !error && blogs.length === 0 && (
+                <section className="py-20 px-4">
+                    <div className="text-center">
+                        <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No articles found</h3>
+                        <p className="text-gray-500">
+                            {searchTerm
+                                ? `No results for "${searchTerm}". Try a different search term.`
+                                : 'No articles available in this category yet.'}
+                        </p>
+                    </div>
+                </section>
+            )}
+
             {/* Featured Post */}
-            {featuredPost && (
+            {!isLoading && !error && featuredPost && (
                 <section className="py-16 px-4 bg-white">
                     <div className="max-w-7xl mx-auto">
                         <motion.div
@@ -186,7 +178,7 @@ export default function Blog() {
                             <div className="grid md:grid-cols-2">
                                 <div className="aspect-video md:aspect-auto">
                                     <img
-                                        src={featuredPost.image}
+                                        src={featuredPost.image || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800'}
                                         alt={featuredPost.title}
                                         className="w-full h-full object-cover"
                                     />
@@ -206,12 +198,12 @@ export default function Blog() {
                                         <span>{featuredPost.author}</span>
                                         <span className="mx-3">•</span>
                                         <Calendar className="w-4 h-4 mr-2" />
-                                        <span>{featuredPost.date}</span>
+                                        <span>{formatDate(featuredPost.createdAt)}</span>
                                         <span className="mx-3">•</span>
                                         <span>{featuredPost.readTime}</span>
                                     </div>
                                     <Link
-                                        to={`/blog/${featuredPost.id}`}
+                                        to={`/blog/${featuredPost._id}`}
                                         className="inline-flex items-center text-maroon-700 font-semibold hover:text-maroon-800 transition-colors group"
                                     >
                                         Read Full Article
@@ -225,62 +217,50 @@ export default function Blog() {
             )}
 
             {/* Blog Grid - Title changed to "Latest Insights" */}
-            <section className="py-16 px-4 bg-gray-50">
-                <div className="max-w-7xl mx-auto">
-                    {filteredPosts.length === 0 ? (
-                        <div className="text-center py-16">
-                            <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">No articles found</h3>
-                            <p className="text-gray-500">
-                                {searchTerm
-                                    ? `No results for "${searchTerm}". Try a different search term.`
-                                    : 'No articles available in this category.'}
-                            </p>
+            {!isLoading && !error && otherPosts.length > 0 && (
+                <section className="py-16 px-4 bg-gray-50">
+                    <div className="max-w-7xl mx-auto">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">
+                            Latest Insights
+                        </h2>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {otherPosts.map((post, index) => (
+                                <Link to={`/blog/${post._id}`} key={post._id}>
+                                    <motion.article
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer h-full border border-gray-100"
+                                    >
+                                        <div className="aspect-video overflow-hidden">
+                                            <img
+                                                src={post.image || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800'}
+                                                alt={post.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        </div>
+                                        <div className="p-6">
+                                            <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full mb-3">
+                                                {post.category}
+                                            </span>
+                                            <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-maroon-700 transition-colors">
+                                                {post.title}
+                                            </h3>
+                                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                                {post.excerpt}
+                                            </p>
+                                            <div className="flex items-center justify-between text-sm text-gray-500">
+                                                <span>{formatDate(post.createdAt)}</span>
+                                                <span>{post.readTime}</span>
+                                            </div>
+                                        </div>
+                                    </motion.article>
+                                </Link>
+                            ))}
                         </div>
-                    ) : otherPosts.length > 0 && (
-                        <>
-                            <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">
-                                Latest Insights
-                            </h2>
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {otherPosts.map((post, index) => (
-                                    <Link to={`/blog/${post.id}`} key={post.id}>
-                                        <motion.article
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                                            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer h-full border border-gray-100"
-                                        >
-                                            <div className="aspect-video overflow-hidden">
-                                                <img
-                                                    src={post.image}
-                                                    alt={post.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                            </div>
-                                            <div className="p-6">
-                                                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full mb-3">
-                                                    {post.category}
-                                                </span>
-                                                <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-maroon-700 transition-colors">
-                                                    {post.title}
-                                                </h3>
-                                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                                                    {post.excerpt}
-                                                </p>
-                                                <div className="flex items-center justify-between text-sm text-gray-500">
-                                                    <span>{post.date}</span>
-                                                    <span>{post.readTime}</span>
-                                                </div>
-                                            </div>
-                                        </motion.article>
-                                    </Link>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
-            </section>
+                    </div>
+                </section>
+            )}
 
             {/* Newsletter CTA - Updated text */}
             <section className="py-20 px-4 bg-maroon-900 text-white">
