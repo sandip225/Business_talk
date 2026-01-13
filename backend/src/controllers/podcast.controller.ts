@@ -118,7 +118,7 @@ const mockPodcasts = [
 // Get all podcasts (public)
 export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { category, limit, page = 1, includeImages } = req.query;
+        const { category, limit, page = 1 } = req.query;
         const pageNum = parseInt(page as string, 10);
         // Default limit to 50 to prevent huge responses
         const limitNum = limit ? parseInt(limit as string, 10) : 50;
@@ -164,21 +164,15 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
         const skip = (pageNum - 1) * limitNum;
 
         // Build projection based on request
-        // - includeImages=true: Include everything (for single podcast detail views)
-        // - compact=true: Exclude all images (for admin lists)
-        // - default: Include thumbnailImage (needed for display), exclude guestImage
+        // - compact=true: Exclude all images (for admin lists where images aren't displayed)
+        // - default: Include all images (needed to show thumbnails and guest photos)
         let selectFields: Record<string, number> = {};
         
-        if (includeImages === 'true') {
-            // Include all fields
-            selectFields = {};
-        } else if (req.query.compact === 'true') {
+        if (req.query.compact === 'true') {
             // Admin list mode: exclude all large images for performance
             selectFields = { thumbnailImage: 0, guestImage: 0, 'guests.image': 0 };
-        } else {
-            // Default: Keep thumbnailImage (needed to show podcast cards), exclude guest images
-            selectFields = { guestImage: 0, 'guests.image': 0 };
         }
+        // Default: Include all fields including images
 
         const [podcasts, total] = await Promise.all([
             Podcast.find(query)
