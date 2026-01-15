@@ -29,6 +29,23 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        // Log error for debugging
+        if (error.response) {
+            console.error('API Error Response:', {
+                status: error.response.status,
+                statusText: error.response.statusText,
+                url: error.config?.url,
+                data: error.response.data
+            });
+        } else if (error.request) {
+            console.error('API No Response:', {
+                url: error.config?.url,
+                message: 'No response received from server. Is the backend running?'
+            });
+        } else {
+            console.error('API Request Error:', error.message);
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 

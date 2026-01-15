@@ -123,12 +123,16 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
         // No default limit - return all podcasts unless limit is specified
         const limitNum = limit ? parseInt(limit as string, 10) : 0;
 
+        console.log(`📡 GET /api/podcasts - category: ${category || 'all'}, limit: ${limitNum || 'unlimited'}, page: ${pageNum}`);
+
         // Use mock data if DB not connected
         if (!isDBConnected()) {
+            console.log('⚠️ Database not connected - returning mock data');
             let filtered = [...mockPodcasts];
             if (category && (category === 'upcoming' || category === 'past')) {
                 filtered = filtered.filter(p => p.category === category);
             }
+            console.log(`✅ Returning ${filtered.length} mock podcasts`);
             res.json({
                 podcasts: filtered,
                 pagination: {
@@ -168,7 +172,7 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
         //   but KEEP guestImage and guests.image (smaller profile pictures needed for display)
         // - default: Include all images
         let selectFields: Record<string, number> = {};
-        
+
         if (req.query.compact === 'true') {
             // Compact mode: exclude only the large thumbnailImage
             // Keep guest profile images since they're needed for podcast cards
@@ -180,7 +184,7 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
         let podcastQuery = Podcast.find(query)
             .select(Object.keys(selectFields).length > 0 ? selectFields : {})
             .sort({ createdAt: -1 });
-        
+
         // Only apply skip/limit if limitNum > 0
         if (limitNum > 0) {
             podcastQuery = podcastQuery.skip(skip).limit(limitNum);
@@ -191,6 +195,8 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
             Podcast.countDocuments(query),
         ]);
 
+        console.log(`✅ Returning ${podcasts.length} podcasts from database (total: ${total})`);
+
         res.json({
             podcasts,
             pagination: {
@@ -200,9 +206,27 @@ export const getAllPodcasts = async (req: AuthRequest, res: Response): Promise<v
                 limit: limitNum > 0 ? limitNum : total,
             },
         });
-    } catch (error) {
-        console.error('Get podcasts error:', error);
-        res.status(500).json({ message: 'Server error fetching podcasts' });
+    } catch (error: any) {
+        console.error('❌ Get podcasts error:', error.message);
+        console.error('   Stack:', error.stack);
+
+        // Fallback to mock data on error
+        console.log('⚠️ Falling back to mock data due to error');
+        const { category } = req.query;
+        let filtered = [...mockPodcasts];
+        if (category && (category === 'upcoming' || category === 'past')) {
+            filtered = filtered.filter(p => p.category === category);
+        }
+
+        res.json({
+            podcasts: filtered,
+            pagination: {
+                total: filtered.length,
+                page: 1,
+                pages: 1,
+                limit: filtered.length,
+            },
+        });
     }
 };
 
