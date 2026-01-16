@@ -161,6 +161,8 @@ export default function Home() {
                                 src="/banner.png"
                                 alt="Business Talk Banner"
                                 className="w-full max-w-4xl object-contain rounded-lg shadow-md"
+                                fetchPriority="high"
+                                decoding="async"
                             />
                         </div>
 
