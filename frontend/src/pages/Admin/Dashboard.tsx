@@ -1278,20 +1278,34 @@ export default function AdminDashboard() {
                                         <input
                                             type="text"
                                             value={frontendServiceId}
-                                            onChange={(e) => setFrontendServiceId(e.target.value)}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                const match = val.match(/(srv-[a-z0-9]+)/i);
+                                                setFrontendServiceId(match ? match[0] : val);
+                                            }}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
                                             placeholder="srv-..."
                                         />
+                                        <p className="text-gray-500 text-xs mt-1">
+                                            Paste the full URL or Service ID.
+                                        </p>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Backend Service ID</label>
                                         <input
                                             type="text"
                                             value={backendServiceId}
-                                            onChange={(e) => setBackendServiceId(e.target.value)}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                const match = val.match(/(srv-[a-z0-9]+)/i);
+                                                setBackendServiceId(match ? match[0] : val);
+                                            }}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
                                             placeholder="srv-..."
                                         />
+                                        <p className="text-gray-500 text-xs mt-1">
+                                            Paste the full URL or Service ID.
+                                        </p>
                                     </div>
                                 </div>
                                 <button
