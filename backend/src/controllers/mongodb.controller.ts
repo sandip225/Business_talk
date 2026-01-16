@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-// @ts-ignore
-import DigestFetch from 'digest-fetch';
+import { request } from 'urllib';
 
 export const getClusters = async (req: Request, res: Response) => {
     try {
@@ -10,35 +9,27 @@ export const getClusters = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Public Key, Private Key, and Project ID are required' });
         }
 
-        // Initialize DigestFetch client
-        const client = new DigestFetch(publicKey, privateKey);
-
-        // MongoDB Atlas API Endpoint for Multi-Cloud Clusters
+        // MongoDB Atlas API Endpoint
         const url = `https://cloud.mongodb.com/api/atlas/v1.0/groups/${projectId}/clusters`;
 
-        const response = await client.fetch(url, {
+        // Use urllib for Digest Authentication
+        const { status, data } = await request(url, {
+            digestAuth: `${publicKey}:${privateKey}`,
+            dataType: 'json',
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-            },
+            }
         });
 
-        if (!response.ok) {
-            try {
-                const errorData = await response.json();
-                console.error('MongoDB Atlas API Error:', errorData);
-                return res.status(response.status).json({
-                    message: `MongoDB Atlas API Error: ${response.statusText}`,
-                    details: errorData
-                });
-            } catch (e) {
-                return res.status(response.status).json({
-                    message: `MongoDB Atlas API Error: ${response.statusText}`
-                });
-            }
+        if (status !== 200) {
+            console.error('MongoDB Atlas API Error:', data);
+            return res.status(status).json({
+                message: `MongoDB Atlas API Error: ${status}`,
+                details: data
+            });
         }
 
-        const data = await response.json();
         res.json(data);
 
     } catch (error: any) {
