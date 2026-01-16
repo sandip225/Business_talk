@@ -66,7 +66,8 @@ export default function AdminDashboard() {
     const [renderApiKey, setRenderApiKey] = useState(localStorage.getItem('renderApiKey') || '');
     const [frontendServiceId, setFrontendServiceId] = useState(extractServiceId(localStorage.getItem('frontendServiceId') || ''));
     const [backendServiceId, setBackendServiceId] = useState(extractServiceId(localStorage.getItem('backendServiceId') || ''));
-    const [renderDeployments, setRenderDeployments] = useState<any[]>([]);
+    const [frontendDeployments, setFrontendDeployments] = useState<any[]>([]);
+    const [backendDeployments, setBackendDeployments] = useState<any[]>([]);
     const [renderLoading, setRenderLoading] = useState(false);
     const [systemHealth, setSystemHealth] = useState<{ status: string; database?: { state: string; host: string } } | null>(null);
     const [healthLoading, setHealthLoading] = useState(false);
@@ -143,12 +144,10 @@ export default function AdminDashboard() {
 
         setRenderLoading(true);
         try {
-            const deployments = [];
-
             if (cleanFe) {
                 try {
                     const feRes = await renderAPI.getDeployments(cleanFe, renderApiKey);
-                    deployments.push(...feRes.data.map((d: any) => ({ ...d, serviceName: 'Frontend' })));
+                    setFrontendDeployments(feRes.data);
                 } catch (e) {
                     console.error("Error fetching frontend deployments", e);
                 }
@@ -157,22 +156,86 @@ export default function AdminDashboard() {
             if (cleanBe) {
                 try {
                     const beRes = await renderAPI.getDeployments(cleanBe, renderApiKey);
-                    deployments.push(...beRes.data.map((d: any) => ({ ...d, serviceName: 'Backend' })));
+                    setBackendDeployments(beRes.data);
                 } catch (e) {
                     console.error("Error fetching backend deployments", e);
                 }
             }
-
-            // Sort by createdAt desc
-            deployments.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-            setRenderDeployments(deployments);
         } catch (error) {
             console.error('Failed to load deployments:', error);
         } finally {
             setRenderLoading(false);
         }
     };
+
+    // Helper component for Deployment Table
+    const DeploymentsTable = ({ deployments, title }: { deployments: any[]; title: string }) => (
+        <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <ExternalLink className="w-6 h-6 text-maroon-700" />
+                    {title} Deployments
+                </h2>
+                <button
+                    onClick={() => fetchRenderDeployments()}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    disabled={renderLoading}
+                >
+                    <RefreshCw className={`w-5 h-5 text-gray-600 ${renderLoading ? 'animate-spin' : ''}`} />
+                </button>
+            </div>
+
+            {renderLoading && deployments.length === 0 ? (
+                <div className="flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
+                </div>
+            ) : deployments.length > 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="border-b border-gray-200">
+                                <th className="pb-4 font-medium text-gray-500">Status</th>
+                                <th className="pb-4 font-medium text-gray-500">Commit</th>
+                                <th className="pb-4 font-medium text-gray-500">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {deployments.map((deploy: any) => {
+                                // Handle potential snake_case or missing fields
+                                const createdAt = deploy.createdAt || deploy.created_at || new Date().toISOString();
+                                const status = deploy.status || deploy.state || 'unknown';
+                                const commitMsg = deploy.commit?.message || deploy.commit?.title || 'Manual Deployment';
+
+                                return (
+                                    <tr key={deploy.id} className="group hover:bg-gray-50">
+                                        <td className="py-4">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'live' ? 'bg-green-100 text-green-800' :
+                                                status === 'build_in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                                                    status === 'failed' ? 'bg-red-100 text-red-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                {status}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 text-gray-600 font-mono text-sm max-w-[200px] truncate" title={commitMsg}>
+                                            {commitMsg}
+                                        </td>
+                                        <td className="py-4 text-gray-500 text-sm">
+                                            {new Date(createdAt).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className="text-center py-12 text-gray-500">
+                    No deployments found
+                </div>
+            )}
+        </div>
+    );
 
     const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
     const [blogStats, setBlogStats] = useState({ total: 0, published: 0, drafts: 0 });
@@ -1353,78 +1416,14 @@ export default function AdminDashboard() {
 
                         {/* Recent Deployments */}
                         {renderApiKey && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="bg-white rounded-xl shadow-sm p-6"
-                            >
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                        <ExternalLink className="w-6 h-6 text-maroon-700" />
-                                        Recent Deployments
-                                    </h2>
-                                    <button
-                                        onClick={() => fetchRenderDeployments()}
-                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                        disabled={renderLoading}
-                                    >
-                                        <RefreshCw className={`w-5 h-5 text-gray-600 ${renderLoading ? 'animate-spin' : ''}`} />
-                                    </button>
-                                </div>
-
-                                {renderLoading ? (
-                                    <div className="flex justify-center py-12">
-                                        <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
-                                    </div>
-                                ) : renderDeployments.length > 0 ? (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left">
-                                            <thead>
-                                                <tr className="border-b border-gray-200">
-                                                    <th className="pb-4 font-medium text-gray-500">Service</th>
-                                                    <th className="pb-4 font-medium text-gray-500">Status</th>
-                                                    <th className="pb-4 font-medium text-gray-500">Commit</th>
-                                                    <th className="pb-4 font-medium text-gray-500">Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-100">
-                                                {renderDeployments.map((deploy: any) => {
-                                                    // Handle potential snake_case or missing fields
-                                                    const createdAt = deploy.createdAt || deploy.created_at || new Date().toISOString();
-                                                    const status = deploy.status || deploy.state || 'unknown';
-                                                    const commitMsg = deploy.commit?.message || deploy.commit?.title || 'Manual Deployment';
-
-                                                    return (
-                                                        <tr key={deploy.id} className="group hover:bg-gray-50">
-                                                            <td className="py-4 font-medium text-gray-900">{deploy.serviceName}</td>
-                                                            <td className="py-4">
-                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'live' ? 'bg-green-100 text-green-800' :
-                                                                        status === 'build_in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                                                                            status === 'failed' ? 'bg-red-100 text-red-800' :
-                                                                                'bg-gray-100 text-gray-800'
-                                                                    }`}>
-                                                                    {status}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-4 text-gray-600 font-mono text-sm max-w-[200px] truncate" title={commitMsg}>
-                                                                {commitMsg}
-                                                            </td>
-                                                            <td className="py-4 text-gray-500 text-sm">
-                                                                {new Date(createdAt).toLocaleString()}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-12 text-gray-500">
-                                        No deployments found or configuration incorrect
-                                    </div>
+                            <div className="space-y-6">
+                                {frontendServiceId && (
+                                    <DeploymentsTable deployments={frontendDeployments} title="Frontend" />
                                 )}
-                            </motion.div>
+                                {backendServiceId && (
+                                    <DeploymentsTable deployments={backendDeployments} title="Backend" />
+                                )}
+                            </div>
                         )}
                     </div>
                 )}
