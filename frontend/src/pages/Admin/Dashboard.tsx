@@ -57,10 +57,15 @@ export default function AdminDashboard() {
 
     const [activeTab, setActiveTab] = useState<ActiveTab>(getInitialTab());
 
-    // Settings State
+    const extractServiceId = (input: string) => {
+        const match = input.match(/(srv-[a-z0-9]+)/i);
+        return match ? match[0] : input;
+    };
+
+    // Settings State - Initialize with sanitization
     const [renderApiKey, setRenderApiKey] = useState(localStorage.getItem('renderApiKey') || '');
-    const [frontendServiceId, setFrontendServiceId] = useState(localStorage.getItem('frontendServiceId') || '');
-    const [backendServiceId, setBackendServiceId] = useState(localStorage.getItem('backendServiceId') || '');
+    const [frontendServiceId, setFrontendServiceId] = useState(extractServiceId(localStorage.getItem('frontendServiceId') || ''));
+    const [backendServiceId, setBackendServiceId] = useState(extractServiceId(localStorage.getItem('backendServiceId') || ''));
     const [renderDeployments, setRenderDeployments] = useState<any[]>([]);
     const [renderLoading, setRenderLoading] = useState(false);
     const [systemHealth, setSystemHealth] = useState<{ status: string; database?: { state: string; host: string } } | null>(null);
@@ -79,25 +84,41 @@ export default function AdminDashboard() {
         }
     }, [location]);
 
+    // Sanitize state on mount/tab change in case of bad local storage
     useEffect(() => {
         if (activeTab === 'settings') {
             checkSystemHealth();
-            if (renderApiKey && (frontendServiceId || backendServiceId)) {
-                fetchRenderDeployments();
+
+            // Auto-clean inputs if they are full URLs
+            const cleanFe = extractServiceId(frontendServiceId);
+            const cleanBe = extractServiceId(backendServiceId);
+            if (cleanFe !== frontendServiceId) setFrontendServiceId(cleanFe);
+            if (cleanBe !== backendServiceId) setBackendServiceId(cleanBe);
+
+            if (renderApiKey && (cleanFe || cleanBe)) {
+                // Use sanitized values for fetch
+                fetchRenderDeployments(cleanFe, cleanBe);
             }
         }
-    }, [activeTab]);
+    }, [activeTab, frontendServiceId, backendServiceId]);
 
     const saveSettings = () => {
+        const cleanFe = extractServiceId(frontendServiceId);
+        const cleanBe = extractServiceId(backendServiceId);
+
+        // Update state if needed
+        setFrontendServiceId(cleanFe);
+        setBackendServiceId(cleanBe);
+
         localStorage.setItem('renderApiKey', renderApiKey);
-        localStorage.setItem('frontendServiceId', frontendServiceId);
-        localStorage.setItem('backendServiceId', backendServiceId);
+        localStorage.setItem('frontendServiceId', cleanFe);
+        localStorage.setItem('backendServiceId', cleanBe);
         setSettingsSaved(true);
         setTimeout(() => setSettingsSaved(false), 3000);
         // Using alert since toast might not be configured in this component yet, or reusing existing error state
         // Checking imports, toast is not imported. I'll use simple alert or console for now, or add toast if I can find it.
         // Actually I don't see toast imported in previous file content. I'll just use the visual feedback of the button.
-        fetchRenderDeployments();
+        fetchRenderDeployments(cleanFe, cleanBe);
     };
 
     const checkSystemHealth = async () => {
@@ -113,20 +134,33 @@ export default function AdminDashboard() {
         }
     };
 
-    const fetchRenderDeployments = async () => {
+    const fetchRenderDeployments = async (feId = frontendServiceId, beId = backendServiceId) => {
         if (!renderApiKey) return;
+
+        // Ensure we are using clean IDs even if passed args are dirty (though we try to pass clean ones)
+        const cleanFe = extractServiceId(feId);
+        const cleanBe = extractServiceId(beId);
+
         setRenderLoading(true);
         try {
             const deployments = [];
 
-            if (frontendServiceId) {
-                const feRes = await renderAPI.getDeployments(frontendServiceId, renderApiKey);
-                deployments.push(...feRes.data.map((d: any) => ({ ...d, serviceName: 'Frontend' })));
+            if (cleanFe) {
+                try {
+                    const feRes = await renderAPI.getDeployments(cleanFe, renderApiKey);
+                    deployments.push(...feRes.data.map((d: any) => ({ ...d, serviceName: 'Frontend' })));
+                } catch (e) {
+                    console.error("Error fetching frontend deployments", e);
+                }
             }
 
-            if (backendServiceId) {
-                const beRes = await renderAPI.getDeployments(backendServiceId, renderApiKey);
-                deployments.push(...beRes.data.map((d: any) => ({ ...d, serviceName: 'Backend' })));
+            if (cleanBe) {
+                try {
+                    const beRes = await renderAPI.getDeployments(cleanBe, renderApiKey);
+                    deployments.push(...beRes.data.map((d: any) => ({ ...d, serviceName: 'Backend' })));
+                } catch (e) {
+                    console.error("Error fetching backend deployments", e);
+                }
             }
 
             // Sort by createdAt desc
@@ -1331,7 +1365,7 @@ export default function AdminDashboard() {
                                         Recent Deployments
                                     </h2>
                                     <button
-                                        onClick={fetchRenderDeployments}
+                                        onClick={() => fetchRenderDeployments()}
                                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                         disabled={renderLoading}
                                     >
