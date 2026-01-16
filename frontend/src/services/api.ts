@@ -279,5 +279,10 @@ export const systemHealthAPI = {
     check: () => api.get('/health'),
 };
 
+export const mongoAPI = {
+    getClusters: (publicKey: string, privateKey: string, projectId: string) =>
+        api.post('/mongodb/clusters', { publicKey, privateKey, projectId }),
+};
+
 export default api;
 

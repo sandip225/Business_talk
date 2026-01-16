@@ -14,6 +14,7 @@ import categoryRoutes from './routes/category.routes';
 import importRoutes from './routes/import.routes';
 import aboutUsRoutes from './routes/aboutus.routes';
 import renderRoutes from './routes/render.routes';
+import mongoRoutes from './routes/mongodb.routes';
 
 const app = express();
 
@@ -144,8 +145,9 @@ app.use('/api/podcasts', podcastRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/import', importRoutes);
-app.use('/api/aboutus', aboutUsRoutes);
+app.use('/api/about', aboutUsRoutes); // Changed '/api/aboutus' to '/api/about' as per instruction
 app.use('/api/render', renderRoutes);
+app.use('/api/mongodb', mongoRoutes); // Added mongodb routes
 
 // 404 handler
 app.use((_req, res) => {
