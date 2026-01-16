@@ -48,50 +48,68 @@ export default function AdminDashboard() {
     const ITEMS_PER_PAGE = 10;
     const [podcastSearch, setPodcastSearch] = useState('');
     const [podcastPage, setPodcastPage] = useState(1);
+    const [totalPodcastCount, setTotalPodcastCount] = useState(0);
     const [blogSearch, setBlogSearch] = useState('');
     const [blogPage, setBlogPage] = useState(1);
+    const [totalBlogCount, setTotalBlogCount] = useState(0);
 
+    // Fetch podcasts with server-side pagination
+    const fetchPodcasts = async (page: number, search: string, category: 'all' | 'upcoming' | 'past') => {
+        setIsLoading(true);
+        try {
+            const params: { limit: number; page: number; search?: string; category?: string } = {
+                limit: ITEMS_PER_PAGE,
+                page,
+            };
+            if (search) params.search = search;
+            if (category !== 'all') params.category = category;
+
+            const [podcastsRes, statsRes] = await Promise.all([
+                podcastAPI.getAll(params),
+                podcastAPI.getStats(),
+            ]);
+
+            setPodcasts(podcastsRes.data.podcasts || []);
+            setTotalPodcastCount(podcastsRes.data.total || podcastsRes.data.podcasts?.length || 0);
+            setStats(statsRes.data);
+        } catch (error) {
+            console.error('Error fetching podcasts:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Initial podcast fetch and when page/search/filter changes
     useEffect(() => {
         if (!isAuthenticated) {
             navigate('/admin/login');
             return;
         }
+        fetchPodcasts(podcastPage, podcastSearch, filter);
+    }, [isAuthenticated, navigate, podcastPage, podcastSearch, filter]);
 
-        const fetchData = async () => {
-            setIsLoading(true);
-            try {
-                // Fetch podcasts with thumbnails for admin preview
-                // No limit - get all podcasts
-                const [podcastsRes, statsRes] = await Promise.all([
-                    podcastAPI.getAll(),
-                    podcastAPI.getStats(),
-                ]);
-                setPodcasts(podcastsRes.data.podcasts);
-                setStats(statsRes.data);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [isAuthenticated, navigate, setPodcasts]);
-
-    useEffect(() => {
-        if (activeTab === 'blogs' && blogs.length === 0) {
-            fetchBlogs();
-        }
-    }, [activeTab]);
-
-    const fetchBlogs = async () => {
+    // Fetch blogs with server-side pagination
+    const fetchBlogs = async (page: number, search: string) => {
         setBlogsLoading(true);
         try {
             const [blogsRes, statsRes] = await Promise.all([
-                blogAPI.getAdminAll(),
+                blogAPI.getAdminAll(),  // TODO: Add pagination to blog API
                 blogAPI.getStats(),
             ]);
-            setBlogs(blogsRes.data.blogs || []);
+
+            // Client-side filtering and pagination for blogs (until backend supports it)
+            let allBlogs = blogsRes.data.blogs || [];
+            if (search) {
+                const searchLower = search.toLowerCase();
+                allBlogs = allBlogs.filter((blog: Blog) =>
+                    blog.title?.toLowerCase().includes(searchLower) ||
+                    blog.category?.toLowerCase().includes(searchLower) ||
+                    blog.author?.toLowerCase().includes(searchLower)
+                );
+            }
+            setTotalBlogCount(allBlogs.length);
+            const start = (page - 1) * ITEMS_PER_PAGE;
+            setBlogs(allBlogs.slice(start, start + ITEMS_PER_PAGE));
             setBlogStats(statsRes.data.stats || { total: 0, published: 0, drafts: 0 });
         } catch (error) {
             console.error('Error fetching blogs:', error);
@@ -99,6 +117,12 @@ export default function AdminDashboard() {
             setBlogsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (activeTab === 'blogs') {
+            fetchBlogs(blogPage, blogSearch);
+        }
+    }, [activeTab, blogPage, blogSearch]);
 
     const handleLogout = () => {
         logout();
@@ -145,41 +169,9 @@ export default function AdminDashboard() {
         }
     };
 
-    // Filter podcasts by category AND search term
-    const searchFilteredPodcasts = podcasts.filter((podcast) => {
-        const matchesCategory = filter === 'all' ? true : podcast.category === filter;
-        const searchLower = podcastSearch.toLowerCase();
-        const matchesSearch = podcastSearch === '' ||
-            podcast.title?.toLowerCase().includes(searchLower) ||
-            podcast.guestName?.toLowerCase().includes(searchLower) ||
-            podcast.episodeNumber?.toString().includes(podcastSearch) ||
-            podcast.description?.toLowerCase().includes(searchLower);
-        return matchesCategory && matchesSearch;
-    });
-
-    // Paginate podcasts
-    const totalPodcastPages = Math.ceil(searchFilteredPodcasts.length / ITEMS_PER_PAGE);
-    const paginatedPodcasts = searchFilteredPodcasts.slice(
-        (podcastPage - 1) * ITEMS_PER_PAGE,
-        podcastPage * ITEMS_PER_PAGE
-    );
-
-    // Filter blogs by search term
-    const searchFilteredBlogs = blogs.filter((blog) => {
-        const searchLower = blogSearch.toLowerCase();
-        return blogSearch === '' ||
-            blog.title?.toLowerCase().includes(searchLower) ||
-            blog.category?.toLowerCase().includes(searchLower) ||
-            blog.author?.toLowerCase().includes(searchLower) ||
-            blog.excerpt?.toLowerCase().includes(searchLower);
-    });
-
-    // Paginate blogs
-    const totalBlogPages = Math.ceil(searchFilteredBlogs.length / ITEMS_PER_PAGE);
-    const paginatedBlogs = searchFilteredBlogs.slice(
-        (blogPage - 1) * ITEMS_PER_PAGE,
-        blogPage * ITEMS_PER_PAGE
-    );
+    // Calculate total pages from server counts (podcasts are already paginated from server)
+    const totalPodcastPages = Math.ceil(totalPodcastCount / ITEMS_PER_PAGE);
+    const totalBlogPages = Math.ceil(totalBlogCount / ITEMS_PER_PAGE);
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('en-US', {
@@ -337,7 +329,7 @@ export default function AdminDashboard() {
                                     <div>
                                         <h2 className="text-lg font-bold text-gray-900">All Podcasts</h2>
                                         <p className="text-sm text-gray-500">
-                                            Showing {paginatedPodcasts.length} of {searchFilteredPodcasts.length} podcasts
+                                            Showing {podcasts.length} of {totalPodcastCount} podcasts
                                         </p>
                                     </div>
                                     <div className="flex items-center space-x-4">
@@ -385,7 +377,7 @@ export default function AdminDashboard() {
                                         <Loader2 className="w-8 h-8 animate-spin text-maroon-700 mx-auto" />
                                         <p className="text-gray-500 mt-2">Loading podcasts...</p>
                                     </div>
-                                ) : paginatedPodcasts.length === 0 ? (
+                                ) : podcasts.length === 0 ? (
                                     <div className="p-12 text-center">
                                         <p className="text-gray-500">{podcastSearch ? 'No podcasts match your search.' : 'No podcasts found.'}</p>
                                         {!podcastSearch && (
@@ -399,7 +391,7 @@ export default function AdminDashboard() {
                                         )}
                                     </div>
                                 ) : (
-                                    paginatedPodcasts.map((podcast) => (
+                                    podcasts.map((podcast) => (
                                         <motion.div
                                             key={podcast._id}
                                             initial={{ opacity: 0 }}
@@ -577,7 +569,7 @@ export default function AdminDashboard() {
                                     <div>
                                         <h2 className="text-lg font-bold text-gray-900">All Blogs</h2>
                                         <p className="text-sm text-gray-500">
-                                            Showing {paginatedBlogs.length} of {searchFilteredBlogs.length} blogs
+                                            Showing {blogs.length} of {totalBlogCount} blogs
                                         </p>
                                     </div>
                                     <Link
@@ -608,7 +600,7 @@ export default function AdminDashboard() {
                                         <Loader2 className="w-8 h-8 animate-spin text-maroon-700 mx-auto" />
                                         <p className="text-gray-500 mt-2">Loading blogs...</p>
                                     </div>
-                                ) : paginatedBlogs.length === 0 ? (
+                                ) : blogs.length === 0 ? (
                                     <div className="p-12 text-center">
                                         <p className="text-gray-500">{blogSearch ? 'No blogs match your search.' : 'No blogs found.'}</p>
                                         {!blogSearch && (
@@ -622,7 +614,7 @@ export default function AdminDashboard() {
                                         )}
                                     </div>
                                 ) : (
-                                    paginatedBlogs.map((blog) => (
+                                    blogs.map((blog) => (
                                         <motion.div
                                             key={blog._id}
                                             initial={{ opacity: 0 }}
