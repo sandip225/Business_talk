@@ -5,19 +5,21 @@ import { Link } from 'react-router-dom';
 import PodcastCard from '../components/podcast/PodcastCard';
 import StayUpdated from '../components/layout/StayUpdated';
 import { podcastAPI, Podcast } from '../services/api';
-import { usePodcastStore } from '../store/useStore';
+// Removed unused usePodcastStore import
 import logoImage from '../assets/logo.jpg';
 
 export default function Home() {
-    // Keep Zustand store ONLY for upcoming podcasts
-    const { upcomingPodcasts, setUpcomingPodcasts, setLoading: setStoreLoading } = usePodcastStore();
+    // Use local state for upcoming podcasts to support pagination/limiting
+    const [upcomingPodcasts, setUpcomingPodcasts] = useState<Podcast[]>([]);
+    const [upcomingTotal, setUpcomingTotal] = useState(0);
+    const [isUpcomingLoading, setIsUpcomingLoading] = useState(true);
 
     // Use local state for past podcasts (like Podcasts.tsx does)
     const [pastPodcasts, setPastPodcastsLocal] = useState<Podcast[]>([]);
     const [isPastLoading, setIsPastLoading] = useState(false);
 
     // Combined loading state
-    const isLoading = isPastLoading;
+    const isLoading = isUpcomingLoading || isPastLoading;
 
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
@@ -41,26 +43,25 @@ export default function Home() {
         setDisplayedPastCount(2);
     };
 
-    // Fetch upcoming podcasts (keep using store)
+    // Fetch upcoming podcasts - limit to 6 for performance
     useEffect(() => {
         const fetchUpcoming = async () => {
-            if (upcomingPodcasts.length > 0 && retryCount === 0) {
-                return; // Already have data
-            }
-
-            setStoreLoading(true);
+            setIsUpcomingLoading(true);
             try {
-                const response = await podcastAPI.getAll({ category: 'upcoming' });
+                // Limit to 6 items to prevent loading massive payload (60MB+)
+                const response = await podcastAPI.getAll({ category: 'upcoming', limit: 6 });
                 setUpcomingPodcasts(response.data.podcasts || []);
+                setUpcomingTotal(response.data.pagination?.total || 0);
             } catch (err) {
                 console.error('[Home] Error fetching upcoming podcasts:', err);
+                // Don't set main error here to allow rest of page to load
             } finally {
-                setStoreLoading(false);
+                setIsUpcomingLoading(false);
             }
         };
 
         fetchUpcoming();
-    }, [setUpcomingPodcasts, setStoreLoading, retryCount, upcomingPodcasts.length]);
+    }, [retryCount]);
 
     // Fetch past podcasts DIRECTLY (like Podcasts.tsx)
     useEffect(() => {
@@ -204,7 +205,7 @@ export default function Home() {
                                 Upcoming Podcast Episodes
                             </h2>
                             <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-green-100 text-green-700 font-semibold rounded-full text-xs sm:text-sm whitespace-nowrap">
-                                {upcomingPodcasts.length} Scheduled
+                                {upcomingTotal} Scheduled
                             </span>
                         </div>
 

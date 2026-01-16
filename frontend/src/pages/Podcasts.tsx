@@ -30,7 +30,7 @@ export default function Podcasts() {
         setPage(1);
         try {
             // Initial load - fetch past podcasts with thumbnails
-            const limit = 12;
+            const limit = 2; // User requested: 2 at once
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit,
@@ -58,7 +58,7 @@ export default function Podcasts() {
         setIsLoadingMore(true);
         try {
             const nextPage = page + 1;
-            const limit = 12; // Load 12 at a time for better UX
+            const limit = 6; // User requested: batch of 6
 
             // IMPORTANT: Only fetch PAST episodes - upcoming should NOT appear here
             const response = await podcastAPI.getAll({

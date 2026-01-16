@@ -74,6 +74,7 @@ export default function AboutUs() {
                                 src={logoImage}
                                 alt="Business Talk Logo"
                                 className="w-32 h-32 object-contain rounded-full shadow-lg"
+                                loading="lazy"
                             />
                         </div>
 

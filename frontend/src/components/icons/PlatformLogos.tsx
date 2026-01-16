@@ -48,6 +48,7 @@ export const PlatformButton = ({ platform, url, label, className = "" }: Platfor
                     src={imageSrc}
                     alt={`${label} logo`}
                     className="w-5 h-5 object-contain"
+                    loading="lazy"
                 />
             </div>
             <span className="font-semibold text-xs whitespace-nowrap">{label}</span>
@@ -89,6 +90,7 @@ export const PlatformIcon = ({ platform, url, size = "md" }: { platform: 'youtub
                     alt={`${platform} logo`}
                     className={`${sizes.icon} object-contain`}
                     style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }}
+                    loading="lazy"
                 />
             </div>
         </a>
