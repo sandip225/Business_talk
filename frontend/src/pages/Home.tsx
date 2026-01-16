@@ -24,6 +24,12 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
 
+    // Pagination for upcoming podcasts (infinite scroll)
+    const [displayedUpcomingCount, setDisplayedUpcomingCount] = useState(6);
+    const [isLoadingMoreUpcoming, setIsLoadingMoreUpcoming] = useState(false);
+    const upcomingObserverRef = useRef<IntersectionObserver | null>(null);
+    const upcomingLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
     // Pagination for past podcasts only
     const [displayedPastCount, setDisplayedPastCount] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -33,6 +39,7 @@ export default function Home() {
     const INITIAL_LOAD = 2;
     const SECOND_LOAD = 4;
     const BATCH_SIZE = 6;
+    const UPCOMING_BATCH_SIZE = 6;
 
     // Set page title
     useEffect(() => {
@@ -67,6 +74,39 @@ export default function Home() {
 
         fetchUpcoming();
     }, [retryCount]);
+
+    // Load more upcoming podcasts (for infinite scroll)
+    const loadMoreUpcoming = useCallback(() => {
+        if (isLoadingMoreUpcoming || displayedUpcomingCount >= upcomingPodcasts.length) return;
+
+        setIsLoadingMoreUpcoming(true);
+        setTimeout(() => {
+            setDisplayedUpcomingCount(prev => Math.min(prev + UPCOMING_BATCH_SIZE, upcomingPodcasts.length));
+            setIsLoadingMoreUpcoming(false);
+        }, 300);
+    }, [displayedUpcomingCount, upcomingPodcasts.length, isLoadingMoreUpcoming, UPCOMING_BATCH_SIZE]);
+
+    // Setup intersection observer for upcoming podcasts infinite scroll
+    useEffect(() => {
+        if (upcomingObserverRef.current) upcomingObserverRef.current.disconnect();
+
+        upcomingObserverRef.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !isUpcomingLoading && !isLoadingMoreUpcoming) {
+                    loadMoreUpcoming();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (upcomingLoadMoreRef.current) {
+            upcomingObserverRef.current.observe(upcomingLoadMoreRef.current);
+        }
+
+        return () => {
+            if (upcomingObserverRef.current) upcomingObserverRef.current.disconnect();
+        };
+    }, [loadMoreUpcoming, isUpcomingLoading, isLoadingMoreUpcoming]);
 
     // Fetch past podcasts DIRECTLY (like Podcasts.tsx)
     useEffect(() => {
@@ -139,8 +179,8 @@ export default function Home() {
         };
     }, [loadMorePodcasts, isLoading, isLoadingMore]);
 
-    // Display all upcoming podcasts and paginated past podcasts
-    const displayedUpcoming = upcomingPodcasts; // Show ALL upcoming
+    // Display paginated upcoming and past podcasts
+    const displayedUpcoming = upcomingPodcasts.slice(0, displayedUpcomingCount);
     const displayedPast = pastPodcasts.slice(0, displayedPastCount);
 
     return (
@@ -244,6 +284,21 @@ export default function Home() {
                                         <PodcastCard key={podcast._id} podcast={podcast} variant="thumbnail-only" />
                                     ))}
                                 </div>
+
+                                {/* Infinite scroll sentinel for upcoming podcasts */}
+                                {displayedUpcomingCount < upcomingPodcasts.length && (
+                                    <div
+                                        ref={upcomingLoadMoreRef}
+                                        className="flex justify-center py-8"
+                                    >
+                                        {isLoadingMoreUpcoming && (
+                                            <div className="flex items-center gap-2 text-maroon-700">
+                                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-maroon-700"></div>
+                                                <span>Loading more episodes...</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </>
                         )}
                     </motion.div>
