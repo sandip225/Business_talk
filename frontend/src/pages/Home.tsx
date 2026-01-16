@@ -24,8 +24,8 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
 
-    // Pagination for upcoming podcasts (infinite scroll)
-    const [displayedUpcomingCount, setDisplayedUpcomingCount] = useState(6);
+    // Pagination for upcoming podcasts (show all by default)
+    const [displayedUpcomingCount, setDisplayedUpcomingCount] = useState(999); // Show all
     const [isLoadingMoreUpcoming, setIsLoadingMoreUpcoming] = useState(false);
     const upcomingObserverRef = useRef<IntersectionObserver | null>(null);
     const upcomingLoadMoreRef = useRef<HTMLDivElement | null>(null);
