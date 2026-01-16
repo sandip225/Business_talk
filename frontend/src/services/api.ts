@@ -268,4 +268,16 @@ export const aboutUsAPI = {
     update: (data: AboutUsContent) => api.put<{ message: string; aboutUs: AboutUsContent }>('/aboutus', data),
 };
 
+// Render API
+export const renderAPI = {
+    getDeployments: (serviceId: string, apiKey: string) =>
+        api.post('/render/deployments', { serviceId, apiKey }),
+};
+
+// System Health API
+export const systemHealthAPI = {
+    check: () => api.get('/health'),
+};
+
 export default api;
+

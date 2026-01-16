@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import mongoose from 'mongoose';
 
 import { config } from './config/env';
 import { connectDB } from './config/db';
@@ -12,6 +13,7 @@ import blogRoutes from './routes/blog.routes';
 import categoryRoutes from './routes/category.routes';
 import importRoutes from './routes/import.routes';
 import aboutUsRoutes from './routes/aboutus.routes';
+import renderRoutes from './routes/render.routes';
 
 const app = express();
 
@@ -107,6 +109,9 @@ app.get('/', (_req, res) => {
                 get: 'GET /api/aboutus',
                 update: 'PUT /api/aboutus (admin)',
             },
+            render: {
+                deployments: 'POST /api/render/deployments',
+            }
         },
         documentation: 'See README.md for full API documentation',
     });
@@ -114,7 +119,23 @@ app.get('/', (_req, res) => {
 
 // Health check
 app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    const dbState = mongoose.connection.readyState;
+    const dbStatus = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting',
+    };
+
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        database: {
+            state: dbStatus[dbState] || 'unknown',
+            host: mongoose.connection.host,
+            name: mongoose.connection.name
+        }
+    });
 });
 
 // API Routes
@@ -124,6 +145,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/aboutus', aboutUsRoutes);
+app.use('/api/render', renderRoutes);
 
 // 404 handler
 app.use((_req, res) => {

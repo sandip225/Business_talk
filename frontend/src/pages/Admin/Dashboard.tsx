@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import logoImage from '../../assets/logo.jpg';
 import {
@@ -25,27 +25,125 @@ import {
     Save,
     XCircle,
     CheckCircle,
+    Settings,
+    Activity,
+    RefreshCw,
+    Server,
+    Database,
+    ExternalLink
 } from 'lucide-react';
-import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent } from '../../services/api';
+import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
 
-type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about';
+type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about' | 'settings' | 'calendar';
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, isAuthenticated, logout } = useAuthStore();
     const { podcasts, setPodcasts, removePodcast } = usePodcastStore();
     const [isLoading, setIsLoading] = useState(true);
+
+    // Determine active tab from URL or default to 'podcasts'
+    const getInitialTab = () => {
+        const path = location.pathname;
+        if (path.includes('/admin/blogs')) return 'blogs';
+        if (path.includes('/admin/calendar')) return 'calendar';
+        if (path.includes('/admin/import')) return 'import';
+        if (path.includes('/admin/about')) return 'about';
+        if (path.includes('/admin/settings')) return 'settings';
+        return 'podcasts';
+    };
+
+    const [activeTab, setActiveTab] = useState<ActiveTab>(getInitialTab());
+
+    // Settings State
+    const [renderApiKey, setRenderApiKey] = useState(localStorage.getItem('renderApiKey') || '');
+    const [frontendServiceId, setFrontendServiceId] = useState(localStorage.getItem('frontendServiceId') || '');
+    const [backendServiceId, setBackendServiceId] = useState(localStorage.getItem('backendServiceId') || '');
+    const [renderDeployments, setRenderDeployments] = useState<any[]>([]);
+    const [renderLoading, setRenderLoading] = useState(false);
+    const [systemHealth, setSystemHealth] = useState<{ status: string; database?: { state: string; host: string } } | null>(null);
+    const [healthLoading, setHealthLoading] = useState(false);
+    const [settingsSaved, setSettingsSaved] = useState(false);
 
     // Set page title
     useEffect(() => {
         document.title = "Business Talk | Admin Dashboard";
     }, []);
+
+    // Handle Settings Tab Load
+    useEffect(() => {
+        if (location.pathname.includes('/admin/settings')) {
+            setActiveTab('settings');
+        }
+    }, [location]);
+
+    useEffect(() => {
+        if (activeTab === 'settings') {
+            checkSystemHealth();
+            if (renderApiKey && (frontendServiceId || backendServiceId)) {
+                fetchRenderDeployments();
+            }
+        }
+    }, [activeTab]);
+
+    const saveSettings = () => {
+        localStorage.setItem('renderApiKey', renderApiKey);
+        localStorage.setItem('frontendServiceId', frontendServiceId);
+        localStorage.setItem('backendServiceId', backendServiceId);
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 3000);
+        // Using alert since toast might not be configured in this component yet, or reusing existing error state
+        // Checking imports, toast is not imported. I'll use simple alert or console for now, or add toast if I can find it.
+        // Actually I don't see toast imported in previous file content. I'll just use the visual feedback of the button.
+        fetchRenderDeployments();
+    };
+
+    const checkSystemHealth = async () => {
+        setHealthLoading(true);
+        try {
+            const response = await systemHealthAPI.check();
+            setSystemHealth(response.data);
+        } catch (error) {
+            console.error('Health check failed:', error);
+            setSystemHealth({ status: 'error', database: { state: 'disconnected', host: 'unknown' } });
+        } finally {
+            setHealthLoading(false);
+        }
+    };
+
+    const fetchRenderDeployments = async () => {
+        if (!renderApiKey) return;
+        setRenderLoading(true);
+        try {
+            const deployments = [];
+
+            if (frontendServiceId) {
+                const feRes = await renderAPI.getDeployments(frontendServiceId, renderApiKey);
+                deployments.push(...feRes.data.map((d: any) => ({ ...d, serviceName: 'Frontend' })));
+            }
+
+            if (backendServiceId) {
+                const beRes = await renderAPI.getDeployments(backendServiceId, renderApiKey);
+                deployments.push(...beRes.data.map((d: any) => ({ ...d, serviceName: 'Backend' })));
+            }
+
+            // Sort by createdAt desc
+            deployments.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+            setRenderDeployments(deployments);
+        } catch (error) {
+            console.error('Failed to load deployments:', error);
+        } finally {
+            setRenderLoading(false);
+        }
+    };
+
     const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0 });
     const [blogStats, setBlogStats] = useState({ total: 0, published: 0, drafts: 0 });
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
     const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<ActiveTab>('podcasts');
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [blogsLoading, setBlogsLoading] = useState(false);
 
@@ -420,6 +518,16 @@ export default function AdminDashboard() {
                     >
                         <Info className="w-5 h-5" />
                         About Us
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'settings'
+                            ? 'bg-maroon-700 text-white'
+                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Settings className="w-5 h-5" />
+                        Settings
                     </button>
                 </div>
 
@@ -1086,6 +1194,181 @@ export default function AdminDashboard() {
                                     )}
                                 </button>
                             </>
+                        )}
+                    </div>
+                )}
+
+                {/* Settings Tab */}
+                {activeTab === 'settings' && (
+                    <div className="space-y-6">
+                        {/* System Health Section */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-white rounded-xl shadow-sm p-6"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                    <Activity className="w-6 h-6 text-maroon-700" />
+                                    System Status
+                                </h2>
+                                <button
+                                    onClick={checkSystemHealth}
+                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    title="Refresh Status"
+                                >
+                                    <RefreshCw className={`w-5 h-5 text-gray-600 ${healthLoading ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <Server className="w-5 h-5 text-gray-500" />
+                                        <span className="font-medium text-gray-700">Backend API</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-3 h-3 rounded-full ${systemHealth?.status === 'ok' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                        <span className="text-sm text-gray-600">
+                                            {systemHealth?.status === 'ok' ? 'Operational' : 'Unreachable'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <Database className="w-5 h-5 text-gray-500" />
+                                        <span className="font-medium text-gray-700">Database</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-3 h-3 rounded-full ${systemHealth?.database?.state === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                        <span className="text-sm text-gray-600">
+                                            {systemHealth?.database?.state ? systemHealth.database.state.charAt(0).toUpperCase() + systemHealth.database.state.slice(1) : 'Unknown'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Render Configuration */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="bg-white rounded-xl shadow-sm p-6"
+                        >
+                            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <Settings className="w-6 h-6 text-maroon-700" />
+                                Render Configuration
+                            </h2>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Render API Key</label>
+                                    <input
+                                        type="password"
+                                        value={renderApiKey}
+                                        onChange={(e) => setRenderApiKey(e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                                        placeholder="rnd_..."
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Frontend Service ID</label>
+                                        <input
+                                            type="text"
+                                            value={frontendServiceId}
+                                            onChange={(e) => setFrontendServiceId(e.target.value)}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                                            placeholder="srv-..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Backend Service ID</label>
+                                        <input
+                                            type="text"
+                                            value={backendServiceId}
+                                            onChange={(e) => setBackendServiceId(e.target.value)}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                                            placeholder="srv-..."
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={saveSettings}
+                                    className="px-6 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
+                                >
+                                    {settingsSaved ? 'Saved!' : 'Save Configuration'}
+                                </button>
+                            </div>
+                        </motion.div>
+
+                        {/* Recent Deployments */}
+                        {renderApiKey && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="bg-white rounded-xl shadow-sm p-6"
+                            >
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                        <ExternalLink className="w-6 h-6 text-maroon-700" />
+                                        Recent Deployments
+                                    </h2>
+                                    <button
+                                        onClick={fetchRenderDeployments}
+                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        disabled={renderLoading}
+                                    >
+                                        <RefreshCw className={`w-5 h-5 text-gray-600 ${renderLoading ? 'animate-spin' : ''}`} />
+                                    </button>
+                                </div>
+
+                                {renderLoading ? (
+                                    <div className="flex justify-center py-12">
+                                        <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
+                                    </div>
+                                ) : renderDeployments.length > 0 ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="border-b border-gray-200">
+                                                    <th className="pb-4 font-medium text-gray-500">Service</th>
+                                                    <th className="pb-4 font-medium text-gray-500">Status</th>
+                                                    <th className="pb-4 font-medium text-gray-500">Commit</th>
+                                                    <th className="pb-4 font-medium text-gray-500">Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {renderDeployments.map((deploy: any) => (
+                                                    <tr key={deploy.id} className="group hover:bg-gray-50">
+                                                        <td className="py-4 font-medium text-gray-900">{deploy.serviceName}</td>
+                                                        <td className="py-4">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${deploy.status === 'live' ? 'bg-green-100 text-green-800' :
+                                                                deploy.status === 'build_in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                                                                    'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                {deploy.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-4 text-gray-600 font-mono text-sm">
+                                                            {deploy.commit?.message || 'Manual Deployment'}
+                                                        </td>
+                                                        <td className="py-4 text-gray-500 text-sm">
+                                                            {new Date(deploy.createdAt).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 text-gray-500">
+                                        No deployments found or configuration incorrect
+                                    </div>
+                                )}
+                            </motion.div>
                         )}
                     </div>
                 )}
