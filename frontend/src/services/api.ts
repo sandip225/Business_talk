@@ -264,8 +264,8 @@ export interface AboutUsContent {
 
 // About Us API
 export const aboutUsAPI = {
-    get: () => api.get<AboutUsContent>('/aboutus'),
-    update: (data: AboutUsContent) => api.put<{ message: string; aboutUs: AboutUsContent }>('/aboutus', data),
+    get: () => api.get<AboutUsContent>('/about'),
+    update: (data: AboutUsContent) => api.put<{ message: string; aboutUs: AboutUsContent }>('/about', data),
 };
 
 // Render API
