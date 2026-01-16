@@ -29,15 +29,13 @@ export default function Podcasts() {
         setError(null);
         setPage(1);
         try {
-            // Initial load with compact: true to exclude large base64 images
-            // This makes loading MUCH faster - thumbnails will use YouTube images
+            // Initial load - fetch past podcasts with thumbnails
             const limit = 12;
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit,
                 page: 1,
-                search: query,
-                compact: true  // Exclude large images for faster loading
+                search: query
             });
 
             const newPodcasts = response.data.podcasts || [];
@@ -63,13 +61,11 @@ export default function Podcasts() {
             const limit = 12; // Load 12 at a time for better UX
 
             // IMPORTANT: Only fetch PAST episodes - upcoming should NOT appear here
-            // Use compact: true to exclude large base64 images for faster loading
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit,
                 page: nextPage,
-                search: searchTerm,
-                compact: true  // Exclude large images for faster loading
+                search: searchTerm
             });
 
             const newPodcasts = response.data.podcasts || [];
