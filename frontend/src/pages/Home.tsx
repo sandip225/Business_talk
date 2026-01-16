@@ -72,8 +72,8 @@ export default function Home() {
 
             try {
                 const response = await podcastAPI.getAll({
-                    category: 'past',
-                    compact: true  // Use compact mode like Podcasts page
+                    category: 'past'
+                    // Removed compact: true - we NEED thumbnailImage for uploaded thumbnails to display!
                 });
 
                 const podcasts = response.data.podcasts || [];
