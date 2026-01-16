@@ -48,11 +48,10 @@ export default function Home() {
         const fetchUpcoming = async () => {
             setIsUpcomingLoading(true);
             try {
-                // Fetch all upcoming podcasts with compact mode (excludes large Base64 thumbnailImage)
-                // This reduces API payload from 10-20MB to ~500KB for faster loading
+                // Fetch all upcoming podcasts WITHOUT compact mode to show custom thumbnails
+                // Upcoming podcasts are few (~6-10), so full payload is manageable (~1-2MB)
                 const response = await podcastAPI.getAll({
-                    category: 'upcoming',
-                    compact: true  // Exclude Base64 thumbnailImage, use YouTube thumbnails instead
+                    category: 'upcoming'
                 });
                 setUpcomingPodcasts(response.data.podcasts || []);
                 setUpcomingTotal(response.data.pagination?.total || 0);
