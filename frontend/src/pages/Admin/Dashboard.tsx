@@ -1389,25 +1389,33 @@ export default function AdminDashboard() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {renderDeployments.map((deploy: any) => (
-                                                    <tr key={deploy.id} className="group hover:bg-gray-50">
-                                                        <td className="py-4 font-medium text-gray-900">{deploy.serviceName}</td>
-                                                        <td className="py-4">
-                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${deploy.status === 'live' ? 'bg-green-100 text-green-800' :
-                                                                deploy.status === 'build_in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                                                                    'bg-red-100 text-red-800'
-                                                                }`}>
-                                                                {deploy.status}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-4 text-gray-600 font-mono text-sm">
-                                                            {deploy.commit?.message || 'Manual Deployment'}
-                                                        </td>
-                                                        <td className="py-4 text-gray-500 text-sm">
-                                                            {new Date(deploy.createdAt).toLocaleString()}
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                                {renderDeployments.map((deploy: any) => {
+                                                    // Handle potential snake_case or missing fields
+                                                    const createdAt = deploy.createdAt || deploy.created_at || new Date().toISOString();
+                                                    const status = deploy.status || deploy.state || 'unknown';
+                                                    const commitMsg = deploy.commit?.message || deploy.commit?.title || 'Manual Deployment';
+
+                                                    return (
+                                                        <tr key={deploy.id} className="group hover:bg-gray-50">
+                                                            <td className="py-4 font-medium text-gray-900">{deploy.serviceName}</td>
+                                                            <td className="py-4">
+                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status === 'live' ? 'bg-green-100 text-green-800' :
+                                                                        status === 'build_in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                                                                            status === 'failed' ? 'bg-red-100 text-red-800' :
+                                                                                'bg-gray-100 text-gray-800'
+                                                                    }`}>
+                                                                    {status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-4 text-gray-600 font-mono text-sm max-w-[200px] truncate" title={commitMsg}>
+                                                                {commitMsg}
+                                                            </td>
+                                                            <td className="py-4 text-gray-500 text-sm">
+                                                                {new Date(createdAt).toLocaleString()}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                     </div>
