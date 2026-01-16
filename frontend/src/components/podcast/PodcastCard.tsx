@@ -26,23 +26,21 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
 
     const youtubeId = extractYoutubeId(podcast.youtubeUrl);
 
-    // Get thumbnail URL - prioritize YouTube thumbnails for podcast cards
+    // Get thumbnail URL - for podcast cards (promotional images ONLY, not guest photos)
     const getThumbnailUrl = () => {
-        // Priority: thumbnailImage > YouTube thumbnail > guestImage > logo
-        // YouTube thumbnails are preferred over guest images for card display
+        // Priority: thumbnailImage > YouTube thumbnail > logo
+        // NOTE: guestImage is intentionally EXCLUDED - guest profile photos should never 
+        // be used as the main card image, only in the guest info section below the thumbnail
+
         const thumbnailUrl = getImageUrl(podcast.thumbnailImage);
         if (thumbnailUrl) return thumbnailUrl;
 
-        // Use YouTube thumbnail if available (promotional image)
+        // Use YouTube thumbnail if available (promotional image from YouTube)
         if (youtubeId) {
             return getYoutubeThumbnail(youtubeId);
         }
 
-        // Fallback to guest image only if no YouTube URL
-        const guestUrl = getImageUrl(podcast.guestImage);
-        if (guestUrl) return guestUrl;
-
-        // Return logo as final fallback
+        // Return logo as fallback (not guest image - that's for the guest section below)
         return logoImage;
     };
 
