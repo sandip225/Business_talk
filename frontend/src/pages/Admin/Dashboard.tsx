@@ -112,7 +112,7 @@ export default function AdminDashboard() {
             ]);
 
             setPodcasts(podcastsRes.data.podcasts || []);
-            setTotalPodcastCount(podcastsRes.data.total || podcastsRes.data.podcasts?.length || 0);
+            setTotalPodcastCount(podcastsRes.data.pagination?.total || podcastsRes.data.total || podcastsRes.data.podcasts?.length || 0);
             setStats(statsRes.data);
         } catch (error) {
             console.error('Error fetching podcasts:', error);
