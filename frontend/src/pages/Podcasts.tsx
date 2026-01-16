@@ -29,13 +29,14 @@ export default function Podcasts() {
         setError(null);
         setPage(1);
         try {
-            // Initial load - fetch past podcasts with thumbnails
+            // Initial load - fetch past podcasts WITHOUT Base64 images for speed
             const limit = 2; // User requested: 2 at once
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit,
                 page: 1,
-                search: query
+                search: query,
+                compact: true  // Exclude Base64 thumbnailImage for faster loading
             });
 
             const newPodcasts = response.data.podcasts || [];
@@ -65,7 +66,8 @@ export default function Podcasts() {
                 category: 'past',
                 limit,
                 page: nextPage,
-                search: searchTerm
+                search: searchTerm,
+                compact: true  // Exclude Base64 thumbnailImage for faster loading
             });
 
             const newPodcasts = response.data.podcasts || [];
