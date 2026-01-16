@@ -20,8 +20,13 @@ import {
     Search,
     ChevronLeft,
     ChevronRight,
+    Copy,
+    FileJson,
+    Save,
+    XCircle,
+    CheckCircle,
 } from 'lucide-react';
-import { podcastAPI, blogAPI, Blog } from '../../services/api';
+import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
 
 type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about';
@@ -52,6 +57,43 @@ export default function AdminDashboard() {
     const [blogSearch, setBlogSearch] = useState('');
     const [blogPage, setBlogPage] = useState(1);
     const [totalBlogCount, setTotalBlogCount] = useState(0);
+
+    // Import tab state
+    const [jsonData, setJsonData] = useState('');
+    const [importLoading, setImportLoading] = useState(false);
+    const [importResult, setImportResult] = useState<{ success: number; failed: number; errors: string[]; message: string } | null>(null);
+    const [importError, setImportError] = useState('');
+
+    // About Us tab state
+    const defaultAboutContent: AboutUsContent = {
+        title: 'About Business Talk',
+        paragraphs: [
+            'Business Talk is your premier podcast for cutting-edge trends, groundbreaking research, valuable insights from notable books, and engaging discussions from the realms of business and academia.',
+            'Whether you\'re an academic scholar, researcher, business professional, or entrepreneur, our episodes will inspire you to question the status quo and spark actionable ideas.',
+        ],
+    };
+    const [aboutContent, setAboutContent] = useState<AboutUsContent>(defaultAboutContent);
+    const [aboutSaving, setAboutSaving] = useState(false);
+    const [aboutSuccess, setAboutSuccess] = useState(false);
+    const [aboutError, setAboutError] = useState<string | null>(null);
+    const [aboutLoading, setAboutLoading] = useState(false);
+
+    // Sample JSON for Import
+    const SAMPLE_JSON = `[
+  {
+    "title": "Episode Title Here",
+    "guestName": "Dr. Guest Name",
+    "guestTitle": "Professor of Subject",
+    "guestInstitution": "University Name",
+    "youtubeUrl": "https://www.youtube.com/watch?v=...",
+    "category": "past",
+    "scheduledDate": "2024-12-20",
+    "scheduledTime": "10:00 PM IST",
+    "episodeNumber": 309,
+    "description": "Episode description",
+    "tags": ["tag1", "tag2"]
+  }
+]`;
 
     // Fetch podcasts with server-side pagination
     const fetchPodcasts = async (page: number, search: string, category: 'all' | 'upcoming' | 'past') => {
@@ -169,6 +211,117 @@ export default function AdminDashboard() {
         }
     };
 
+    // Import tab handlers
+    const handleCopySample = () => {
+        navigator.clipboard.writeText(SAMPLE_JSON);
+        alert('Sample JSON copied to clipboard!');
+    };
+
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setJsonData(e.target?.result as string);
+            };
+            reader.readAsText(file);
+        }
+    };
+
+    const handleImport = async () => {
+        if (!jsonData.trim()) {
+            setImportError('Please enter JSON data');
+            return;
+        }
+
+        try {
+            JSON.parse(jsonData);
+        } catch {
+            setImportError('Invalid JSON format');
+            return;
+        }
+
+        setImportLoading(true);
+        setImportError('');
+        setImportResult(null);
+
+        try {
+            const podcasts = JSON.parse(jsonData);
+            const response = await importAPI.importPodcasts(podcasts);
+            setImportResult(response.data);
+            if (response.data.success > 0) {
+                setJsonData('');
+                // Refresh podcasts list
+                fetchPodcasts(podcastPage, podcastSearch, filter);
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } }; message?: string };
+            setImportError(err.response?.data?.message || err.message || 'Import failed');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
+    // About Us tab handlers
+    const fetchAboutContent = async () => {
+        setAboutLoading(true);
+        try {
+            const response = await aboutUsAPI.get();
+            if (response.data) {
+                setAboutContent(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching about content:', error);
+        } finally {
+            setAboutLoading(false);
+        }
+    };
+
+    const handleSaveAbout = async () => {
+        setAboutSaving(true);
+        setAboutError(null);
+        setAboutSuccess(false);
+
+        try {
+            await aboutUsAPI.update(aboutContent);
+            setAboutSuccess(true);
+            setTimeout(() => setAboutSuccess(false), 3000);
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } }; message?: string };
+            setAboutError(err.response?.data?.message || 'Failed to save');
+        } finally {
+            setAboutSaving(false);
+        }
+    };
+
+    const handleAddParagraph = () => {
+        setAboutContent(prev => ({
+            ...prev,
+            paragraphs: [...prev.paragraphs, ''],
+        }));
+    };
+
+    const handleRemoveParagraph = (index: number) => {
+        setAboutContent(prev => ({
+            ...prev,
+            paragraphs: prev.paragraphs.filter((_, i) => i !== index),
+        }));
+    };
+
+    const handleUpdateParagraph = (index: number, value: string) => {
+        setAboutContent(prev => ({
+            ...prev,
+            paragraphs: prev.paragraphs.map((p, i) => (i === index ? value : p)),
+        }));
+    };
+
+    // Fetch about content when switching to About tab
+    useEffect(() => {
+        if (activeTab === 'about') {
+            fetchAboutContent();
+        }
+    }, [activeTab]);
+
     // Calculate total pages from server counts (podcasts are already paginated from server)
     const totalPodcastPages = Math.ceil(totalPodcastCount / ITEMS_PER_PAGE);
     const totalBlogPages = Math.ceil(totalBlogCount / ITEMS_PER_PAGE);
@@ -248,21 +401,26 @@ export default function AdminDashboard() {
                         <Calendar className="w-5 h-5" />
                         Calendar
                     </Link>
-                    <Link
-                        to="/admin/import"
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    <button
+                        onClick={() => setActiveTab('import')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'import'
+                            ? 'bg-maroon-700 text-white'
+                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                            }`}
                     >
                         <Upload className="w-5 h-5" />
                         Import
-                    </Link>
-                    <Link
-                        to="/admin/about"
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
-                        title="Manage About Us Content"
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('about')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'about'
+                            ? 'bg-maroon-700 text-white'
+                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                            }`}
                     >
                         <Info className="w-5 h-5" />
                         About Us
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Podcasts Tab */}
@@ -727,6 +885,209 @@ export default function AdminDashboard() {
                             )}
                         </div>
                     </>
+                )}
+
+                {/* Import Tab */}
+                {activeTab === 'import' && (
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <FileJson className="w-6 h-6 text-maroon-700" />
+                            Import Podcasts
+                        </h2>
+
+                        {/* Sample JSON Format */}
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">JSON Format</h3>
+                            <p className="text-gray-600 text-sm mb-3">
+                                Paste a JSON array of podcasts to import. Each podcast should have the following fields:
+                            </p>
+                            <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                                <pre className="text-sm font-mono whitespace-pre-wrap">{SAMPLE_JSON}</pre>
+                            </div>
+                            <div className="flex gap-3 mt-3">
+                                <button
+                                    onClick={handleCopySample}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                    Copy Sample
+                                </button>
+                                <button
+                                    onClick={() => setJsonData(SAMPLE_JSON)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
+                                >
+                                    Load Sample
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* File Upload */}
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">Upload JSON File (optional)</h3>
+                            <input
+                                type="file"
+                                accept=".json"
+                                onChange={handleFileUpload}
+                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-maroon-700 file:text-white hover:file:bg-maroon-800"
+                            />
+                        </div>
+
+                        {/* JSON Input */}
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">Or paste JSON directly</h3>
+                            <textarea
+                                value={jsonData}
+                                onChange={(e) => setJsonData(e.target.value)}
+                                className="w-full h-64 p-4 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                                placeholder="Paste your JSON here..."
+                            />
+                        </div>
+
+                        {/* Error Message */}
+                        {importError && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                                <XCircle className="w-5 h-5" />
+                                {importError}
+                            </div>
+                        )}
+
+                        {/* Success Result */}
+                        {importResult && (
+                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div className="flex items-center gap-2 text-green-700 font-medium mb-2">
+                                    <CheckCircle className="w-5 h-5" />
+                                    Import Complete
+                                </div>
+                                <p className="text-sm text-green-600">
+                                    Successfully imported {importResult.success} podcasts.
+                                    {importResult.failed > 0 && ` Failed: ${importResult.failed}`}
+                                </p>
+                                {importResult.errors.length > 0 && (
+                                    <ul className="mt-2 text-sm text-red-600 list-disc list-inside">
+                                        {importResult.errors.map((err, i) => (
+                                            <li key={i}>{err}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Import Button */}
+                        <button
+                            onClick={handleImport}
+                            disabled={importLoading || !jsonData.trim()}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                        >
+                            {importLoading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    Importing...
+                                </>
+                            ) : (
+                                <>
+                                    <Upload className="w-5 h-5" />
+                                    Import Podcasts
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
+
+                {/* About Us Tab */}
+                {activeTab === 'about' && (
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <Info className="w-6 h-6 text-maroon-700" />
+                            Edit About Us Content
+                        </h2>
+
+                        {aboutLoading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
+                            </div>
+                        ) : (
+                            <>
+                                {/* Title */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={aboutContent.title}
+                                        onChange={(e) => setAboutContent(prev => ({ ...prev, title: e.target.value }))}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* Paragraphs */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Paragraphs
+                                    </label>
+                                    <div className="space-y-4">
+                                        {aboutContent.paragraphs.map((paragraph, index) => (
+                                            <div key={index} className="flex gap-3">
+                                                <textarea
+                                                    value={paragraph}
+                                                    onChange={(e) => handleUpdateParagraph(index, e.target.value)}
+                                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent min-h-[100px]"
+                                                    placeholder={`Paragraph ${index + 1}`}
+                                                />
+                                                <button
+                                                    onClick={() => handleRemoveParagraph(index)}
+                                                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    disabled={aboutContent.paragraphs.length <= 1}
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={handleAddParagraph}
+                                        className="mt-4 flex items-center gap-2 px-4 py-2 text-maroon-700 border border-maroon-700 rounded-lg hover:bg-maroon-50 transition-colors"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Add Paragraph
+                                    </button>
+                                </div>
+
+                                {/* Error/Success Messages */}
+                                {aboutError && (
+                                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                                        <XCircle className="w-5 h-5" />
+                                        {aboutError}
+                                    </div>
+                                )}
+                                {aboutSuccess && (
+                                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
+                                        <CheckCircle className="w-5 h-5" />
+                                        About Us content saved successfully!
+                                    </div>
+                                )}
+
+                                {/* Save Button */}
+                                <button
+                                    onClick={handleSaveAbout}
+                                    disabled={aboutSaving}
+                                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                >
+                                    {aboutSaving ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="w-5 h-5" />
+                                            Save Changes
+                                        </>
+                                    )}
+                                </button>
+                            </>
+                        )}
+                    </div>
                 )}
             </main>
         </div>

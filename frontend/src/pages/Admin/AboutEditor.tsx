@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Save, ArrowLeft, Loader2, Info, Plus, Trash2 } from 'lucide-react';
+import { Save, Loader2, Info, Plus, Trash2, Mic, FileText, Calendar, Upload, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../store/useStore';
 import { aboutUsAPI, AboutUsContent } from '../../services/api';
 import logoImage from '../../assets/logo.jpg';
@@ -16,7 +16,7 @@ const defaultContent: AboutUsContent = {
 
 export default function AboutEditor() {
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated, user, logout } = useAuthStore();
     const [content, setContent] = useState<AboutUsContent>(defaultContent);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +46,11 @@ export default function AboutEditor() {
 
         fetchContent();
     }, [isAuthenticated, navigate]);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/admin/login');
+    };
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -108,24 +113,68 @@ export default function AboutEditor() {
                                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=Business+Talk&size=200&background=8B1538&color=fff&bold=true'; }}
                             />
                             <div>
-                                <h1 className="text-lg font-bold text-gray-900">Edit About Us Page</h1>
-                                <p className="text-xs text-gray-500">Customize the About Us content</p>
+                                <h1 className="text-lg font-bold text-gray-900">Admin Dashboard</h1>
+                                <p className="text-xs text-gray-500">Welcome, {user?.name}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => navigate('/admin/dashboard')}
-                                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                            <Link
+                                to="/"
+                                className="text-sm text-gray-600 hover:text-gray-900"
                             >
-                                <ArrowLeft className="w-4 h-4" />
-                                <span>Back to Dashboard</span>
+                                View Site
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout</span>
                             </button>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Tab Navigation */}
+                <div className="flex space-x-4 mb-8">
+                    <Link
+                        to="/admin/dashboard"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Mic className="w-5 h-5" />
+                        Podcasts
+                    </Link>
+                    <Link
+                        to="/admin/dashboard"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <FileText className="w-5 h-5" />
+                        Blogs
+                    </Link>
+                    <Link
+                        to="/admin/calendar"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Calendar className="w-5 h-5" />
+                        Calendar
+                    </Link>
+                    <Link
+                        to="/admin/import"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Upload className="w-5 h-5" />
+                        Import
+                    </Link>
+                    <button
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-maroon-700 text-white"
+                    >
+                        <Info className="w-5 h-5" />
+                        About Us
+                    </button>
+                </div>
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

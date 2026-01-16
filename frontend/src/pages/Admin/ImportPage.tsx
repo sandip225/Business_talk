@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-    ArrowLeft,
     Upload,
     Loader2,
     CheckCircle,
     XCircle,
     FileJson,
     Copy,
+    Mic,
+    FileText,
+    Calendar,
+    Info,
+    LogOut,
 } from 'lucide-react';
 import { importAPI } from '../../services/api';
 import { useAuthStore } from '../../store/useStore';
@@ -32,7 +36,7 @@ const SAMPLE_JSON = `[
 
 export default function ImportPage() {
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated, user, logout } = useAuthStore();
     const [jsonData, setJsonData] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState<{
@@ -48,6 +52,11 @@ export default function ImportPage() {
         navigate('/admin/login');
         return null;
     }
+
+    const handleLogout = () => {
+        logout();
+        navigate('/admin/login');
+    };
 
     const handleImport = async () => {
         setError('');
@@ -110,24 +119,71 @@ export default function ImportPage() {
                                 src={logoImage}
                                 alt="Business Talk Logo"
                                 className="h-10 w-auto"
+                                onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=Business+Talk&size=200&background=8B1538&color=fff&bold=true'; }}
                             />
                             <div>
-                                <h1 className="text-lg font-bold text-gray-900">Import Podcasts</h1>
-                                <p className="text-xs text-gray-500">Bulk import from JSON</p>
+                                <h1 className="text-lg font-bold text-gray-900">Admin Dashboard</h1>
+                                <p className="text-xs text-gray-500">Welcome, {user?.name}</p>
                             </div>
                         </div>
-                        <Link
-                            to="/admin/dashboard"
-                            className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span>Back to Dashboard</span>
-                        </Link>
+                        <div className="flex items-center space-x-4">
+                            <Link
+                                to="/"
+                                className="text-sm text-gray-600 hover:text-gray-900"
+                            >
+                                View Site
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Tab Navigation */}
+                <div className="flex space-x-4 mb-8">
+                    <Link
+                        to="/admin/dashboard"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Mic className="w-5 h-5" />
+                        Podcasts
+                    </Link>
+                    <Link
+                        to="/admin/dashboard"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <FileText className="w-5 h-5" />
+                        Blogs
+                    </Link>
+                    <Link
+                        to="/admin/calendar"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Calendar className="w-5 h-5" />
+                        Calendar
+                    </Link>
+                    <button
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-maroon-700 text-white"
+                    >
+                        <Upload className="w-5 h-5" />
+                        Import
+                    </button>
+                    <Link
+                        to="/admin/about"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-white text-gray-600 hover:bg-gray-50"
+                    >
+                        <Info className="w-5 h-5" />
+                        About Us
+                    </Link>
+                </div>
+
                 {/* Instructions */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
