@@ -9,7 +9,16 @@ import { usePodcastStore } from '../store/useStore';
 import logoImage from '../assets/logo.jpg';
 
 export default function Home() {
-    const { upcomingPodcasts, pastPodcasts, setUpcomingPodcasts, setPastPodcasts, setLoading, isLoading, shouldRefetch, clearCache } = usePodcastStore();
+    // Keep Zustand store ONLY for upcoming podcasts
+    const { upcomingPodcasts, setUpcomingPodcasts, setLoading: setStoreLoading } = usePodcastStore();
+
+    // Use local state for past podcasts (like Podcasts.tsx does)
+    const [pastPodcasts, setPastPodcastsLocal] = useState<Podcast[]>([]);
+    const [isPastLoading, setIsPastLoading] = useState(false);
+
+    // Combined loading state
+    const isLoading = isPastLoading;
+
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
     const [displayedPastCount, setDisplayedPastCount] = useState(2);
@@ -27,49 +36,50 @@ export default function Home() {
     }, []);
 
     const handleRetry = () => {
-        clearCache(); // Clear cache to force fresh fetch
         setError(null);
         setRetryCount(prev => prev + 1);
         setDisplayedPastCount(2);
     };
 
+    // Fetch upcoming podcasts (keep using store)
     useEffect(() => {
-        const fetchPodcasts = async () => {
-            // Always fetch if store is empty, or if cache is expired, or if retry was triggered
-            const storeIsEmpty = upcomingPodcasts.length === 0 && pastPodcasts.length === 0;
-            const shouldFetch = storeIsEmpty || shouldRefetch() || retryCount > 0;
-
-            // Debug logging for production troubleshooting
-            console.log('[Home] Podcast fetch check:', {
-                storeIsEmpty,
-                upcomingCount: upcomingPodcasts.length,
-                pastCount: pastPodcasts.length,
-                shouldRefetch: shouldRefetch(),
-                retryCount,
-                willFetch: shouldFetch
-            });
-
-            if (!shouldFetch) {
-                console.log('[Home] Using cached podcast data');
-                return;
+        const fetchUpcoming = async () => {
+            if (upcomingPodcasts.length > 0 && retryCount === 0) {
+                return; // Already have data
             }
 
-            console.log('[Home] Fetching podcasts from API...');
-            setLoading(true);
+            setStoreLoading(true);
             try {
-                // Fetch ALL podcasts - no limit restriction (unlimited)
-                const [upcomingRes, pastRes] = await Promise.all([
-                    podcastAPI.getAll({ category: 'upcoming' }),
-                    podcastAPI.getAll({ category: 'past' })
-                ]);
+                const response = await podcastAPI.getAll({ category: 'upcoming' });
+                setUpcomingPodcasts(response.data.podcasts || []);
+            } catch (err) {
+                console.error('[Home] Error fetching upcoming podcasts:', err);
+            } finally {
+                setStoreLoading(false);
+            }
+        };
 
-                console.log('[Home] API Response:', {
-                    upcomingCount: upcomingRes.data.podcasts?.length || 0,
-                    pastCount: pastRes.data.podcasts?.length || 0
+        fetchUpcoming();
+    }, [setUpcomingPodcasts, setStoreLoading, retryCount, upcomingPodcasts.length]);
+
+    // Fetch past podcasts DIRECTLY (like Podcasts.tsx)
+    useEffect(() => {
+        const fetchPast = async () => {
+            setIsPastLoading(true);
+            setError(null);
+
+            console.log('[Home] Fetching PAST podcasts directly from API...');
+
+            try {
+                const response = await podcastAPI.getAll({
+                    category: 'past',
+                    compact: true  // Use compact mode like Podcasts page
                 });
 
-                setUpcomingPodcasts(upcomingRes.data.podcasts || []);
-                setPastPodcasts(pastRes.data.podcasts || []);
+                const podcasts = response.data.podcasts || [];
+                console.log('[Home] Received past podcasts:', podcasts.length);
+
+                setPastPodcastsLocal(podcasts);
                 setError(null);
 
                 // Load first 2, then immediately load 4 more
@@ -78,15 +88,15 @@ export default function Home() {
                     setDisplayedPastCount(INITIAL_LOAD + SECOND_LOAD);
                 }, 100);
             } catch (err) {
-                console.error('[Home] Error fetching podcasts:', err);
+                console.error('[Home] Error fetching past podcasts:', err);
                 setError('Failed to load podcasts. Please try again later.');
             } finally {
-                setLoading(false);
+                setIsPastLoading(false);
             }
         };
 
-        fetchPodcasts();
-    }, [setUpcomingPodcasts, setPastPodcasts, setLoading, shouldRefetch, retryCount, clearCache]);
+        fetchPast();
+    }, [retryCount]);
 
     // Infinite scroll for past podcasts
     const loadMorePodcasts = useCallback(() => {
