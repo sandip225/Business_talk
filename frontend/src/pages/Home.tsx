@@ -86,7 +86,7 @@ export default function Home() {
         };
 
         fetchPodcasts();
-    }, [setUpcomingPodcasts, setPastPodcasts, setLoading, shouldRefetch, retryCount, clearCache, upcomingPodcasts.length, pastPodcasts.length]);
+    }, [setUpcomingPodcasts, setPastPodcasts, setLoading, shouldRefetch, retryCount, clearCache]);
 
     // Infinite scroll for past podcasts
     const loadMorePodcasts = useCallback(() => {
