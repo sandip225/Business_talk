@@ -30,7 +30,10 @@ import {
     RefreshCw,
     Server,
     Database,
-    ExternalLink
+    ExternalLink,
+    HardDrive,
+    Cpu,
+    ShieldCheck
 } from 'lucide-react';
 import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, mongoAPI } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
@@ -1535,18 +1538,101 @@ export default function AdminDashboard() {
                                 ) : mongoClusters.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {mongoClusters.map((cluster: any) => (
-                                            <div key={cluster.id} className="border border-gray-200 rounded-lg p-4 hover:border-green-500 transition-colors">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <h3 className="font-bold text-gray-900">{cluster.name}</h3>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${cluster.stateName === 'IDLE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                            <div key={cluster.id} className="border border-gray-200 rounded-lg p-5 hover:border-green-500 transition-colors bg-gray-50">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                                                            {cluster.name}
+                                                            <a
+                                                                href={`https://cloud.mongodb.com/v2/${mongoProjectId}#clusters`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-gray-400 hover:text-green-700 transition-colors"
+                                                                title="View in Atlas"
+                                                            >
+                                                                <ExternalLink className="w-4 h-4" />
+                                                            </a>
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500 font-mono mt-1">
+                                                            ID: {cluster.id}
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${cluster.stateName === 'IDLE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                                                         }`}>
+                                                        <div className={`w-2 h-2 rounded-full ${cluster.stateName === 'IDLE' ? 'bg-green-500' : 'bg-yellow-500'}`} />
                                                         {cluster.stateName}
                                                     </span>
                                                 </div>
-                                                <div className="text-sm text-gray-600 space-y-1">
-                                                    <p>Ver: {cluster.mongoDBVersion}</p>
-                                                    <p>Type: {cluster.clusterType}</p>
-                                                    <p>Region: {cluster.providerSettings?.regionName}</p>
+
+                                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                                    <div className="bg-white p-3 rounded border border-gray-100">
+                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                                            <HardDrive className="w-3.5 h-3.5" />
+                                                            Disk Size
+                                                        </div>
+                                                        <p className="font-semibold text-gray-900">
+                                                            {cluster.diskSizeGB ? `${cluster.diskSizeGB} GB` : 'Auto-scaling'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded border border-gray-100">
+                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                                            <Cpu className="w-3.5 h-3.5" />
+                                                            Instance
+                                                        </div>
+                                                        <p className="font-semibold text-gray-900">
+                                                            {cluster.providerSettings?.instanceSizeName || 'Serverless'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded border border-gray-100">
+                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                                            <Database className="w-3.5 h-3.5" />
+                                                            Version
+                                                        </div>
+                                                        <p className="font-semibold text-gray-900">
+                                                            v{cluster.mongoDBVersion}
+                                                        </p>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded border border-gray-100">
+                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                                            <ShieldCheck className="w-3.5 h-3.5" />
+                                                            Backup
+                                                        </div>
+                                                        <p className={`font-semibold ${cluster.backupEnabled ? 'text-green-700' : 'text-gray-500'}`}>
+                                                            {cluster.backupEnabled ? 'Enabled' : 'Disabled'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-gray-800 rounded p-3 relative group">
+                                                    <p className="text-xs text-gray-400 mb-1 uppercase tracking-wider font-semibold">Connection String (Standard)</p>
+                                                    <code className="text-xs text-green-400 font-mono break-all block">
+                                                        {cluster.connectionStrings?.standard
+                                                            ? cluster.connectionStrings.standard.replace(/\/\/([^:]+):([^@]+)@/, '//****:****@')
+                                                            : 'Unavailable'}
+                                                    </code>
+                                                    {cluster.connectionStrings?.standard && (
+                                                        <button
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(cluster.connectionStrings.standard);
+                                                                alert('Connection string copied!');
+                                                            }}
+                                                            className="absolute top-2 right-2 p-1.5 bg-gray-700 rounded text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-600 hover:text-white"
+                                                            title="Copy"
+                                                        >
+                                                            <Copy className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                <div className="mt-4 flex items-center justify-between text-xs text-gray-500 border-t border-gray-200 pt-3">
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="font-semibold">Region:</span>
+                                                        {cluster.providerSettings?.regionName?.replace(/_/g, ' ')}
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="font-semibold">Type:</span>
+                                                        {cluster.replicationSpec?.class || cluster.clusterType}
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
