@@ -77,29 +77,43 @@ export const usePodcastStore = create<PodcastState>((set, get) => ({
             lastFetched: Date.now(),
         }),
 
-    setUpcomingPodcasts: (upcoming: Podcast[]) =>
+    setUpcomingPodcasts: (upcoming: Podcast[]) => {
+        console.log('[Store] Setting upcoming podcasts:', upcoming.length);
         set(() => ({
             upcomingPodcasts: upcoming,
-        })),
+            lastFetched: Date.now(), // Update timestamp when setting data
+        }));
+    },
 
-    setPastPodcasts: (past: Podcast[]) =>
+    setPastPodcasts: (past: Podcast[]) => {
+        console.log('[Store] Setting past podcasts:', past.length);
         set(() => ({
             pastPodcasts: past,
-        })),
+            lastFetched: Date.now(), // Update timestamp when setting data
+        }));
+    },
 
     setLoading: (isLoading) => set({ isLoading }),
 
     setError: (error) => set({ error }),
 
-    // Check if data should be refetched (cache expired or no data)
+    // Check if data should be refetched (cache expired or no timestamp)
     shouldRefetch: () => {
-        const { lastFetched, upcomingPodcasts, pastPodcasts } = get();
-        // If we have no data at all, refetch
-        if (upcomingPodcasts.length === 0 && pastPodcasts.length === 0) return true;
-        // If cache is expired
-        if (lastFetched && Date.now() - lastFetched > CACHE_DURATION) return true;
-        // Otherwise valid
-        return false;
+        const { lastFetched } = get();
+        // Always refetch if no timestamp (first load or cache cleared)
+        if (!lastFetched) {
+            console.log('[Store] No cache timestamp, should refetch');
+            return true;
+        }
+        // Refetch if cache expired (5 minutes)
+        const cacheAge = Date.now() - lastFetched;
+        const isExpired = cacheAge > CACHE_DURATION;
+        console.log('[Store] Cache check:', {
+            ageSeconds: Math.floor(cacheAge / 1000),
+            maxSeconds: CACHE_DURATION / 1000,
+            isExpired
+        });
+        return isExpired;
     },
 
     // Clear cache to force refetch

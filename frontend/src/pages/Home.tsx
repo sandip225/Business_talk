@@ -35,11 +35,26 @@ export default function Home() {
 
     useEffect(() => {
         const fetchPodcasts = async () => {
-            // Only fetch if cache is expired or empty, or if retry was triggered
-            if (!shouldRefetch() && retryCount === 0) {
+            // Always fetch if store is empty, or if cache is expired, or if retry was triggered
+            const storeIsEmpty = upcomingPodcasts.length === 0 && pastPodcasts.length === 0;
+            const shouldFetch = storeIsEmpty || shouldRefetch() || retryCount > 0;
+
+            // Debug logging for production troubleshooting
+            console.log('[Home] Podcast fetch check:', {
+                storeIsEmpty,
+                upcomingCount: upcomingPodcasts.length,
+                pastCount: pastPodcasts.length,
+                shouldRefetch: shouldRefetch(),
+                retryCount,
+                willFetch: shouldFetch
+            });
+
+            if (!shouldFetch) {
+                console.log('[Home] Using cached podcast data');
                 return;
             }
 
+            console.log('[Home] Fetching podcasts from API...');
             setLoading(true);
             try {
                 // Fetch ALL podcasts - no limit restriction (unlimited)
@@ -48,17 +63,22 @@ export default function Home() {
                     podcastAPI.getAll({ category: 'past' })
                 ]);
 
+                console.log('[Home] API Response:', {
+                    upcomingCount: upcomingRes.data.podcasts?.length || 0,
+                    pastCount: pastRes.data.podcasts?.length || 0
+                });
+
                 setUpcomingPodcasts(upcomingRes.data.podcasts || []);
                 setPastPodcasts(pastRes.data.podcasts || []);
                 setError(null);
-                
+
                 // Load first 2, then immediately load 4 more
                 setDisplayedPastCount(INITIAL_LOAD);
                 setTimeout(() => {
                     setDisplayedPastCount(INITIAL_LOAD + SECOND_LOAD);
                 }, 100);
             } catch (err) {
-                console.error('Error fetching podcasts:', err);
+                console.error('[Home] Error fetching podcasts:', err);
                 setError('Failed to load podcasts. Please try again later.');
             } finally {
                 setLoading(false);
@@ -66,12 +86,12 @@ export default function Home() {
         };
 
         fetchPodcasts();
-    }, [setUpcomingPodcasts, setPastPodcasts, setLoading, shouldRefetch, retryCount, clearCache]);
+    }, [setUpcomingPodcasts, setPastPodcasts, setLoading, shouldRefetch, retryCount, clearCache, upcomingPodcasts.length, pastPodcasts.length]);
 
     // Infinite scroll for past podcasts
     const loadMorePodcasts = useCallback(() => {
         if (isLoadingMore || displayedPastCount >= pastPodcasts.length) return;
-        
+
         setIsLoadingMore(true);
         setTimeout(() => {
             setDisplayedPastCount(prev => Math.min(prev + BATCH_SIZE, pastPodcasts.length));
@@ -261,7 +281,7 @@ export default function Home() {
                                         <PodcastCard key={podcast._id} podcast={podcast} variant="grid" />
                                     ))}
                                 </div>
-                                
+
                                 {/* Infinite scroll trigger */}
                                 {displayedPastCount < pastPodcasts.length && (
                                     <div ref={loadMoreRef} className="flex justify-center mt-8">
