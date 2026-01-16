@@ -23,6 +23,8 @@ export default function Home() {
 
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
+
+    // Pagination for past podcasts only
     const [displayedPastCount, setDisplayedPastCount] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const observerRef = useRef<IntersectionObserver | null>(null);
@@ -137,8 +139,8 @@ export default function Home() {
         };
     }, [loadMorePodcasts, isLoading, isLoadingMore]);
 
-    // Get all upcoming podcasts and displayed past podcasts
-    const allUpcoming = upcomingPodcasts;
+    // Display all upcoming podcasts and paginated past podcasts
+    const displayedUpcoming = upcomingPodcasts; // Show ALL upcoming
     const displayedPast = pastPodcasts.slice(0, displayedPastCount);
 
     return (
@@ -230,7 +232,7 @@ export default function Home() {
                                     Retry
                                 </button>
                             </div>
-                        ) : allUpcoming.length === 0 ? (
+                        ) : upcomingPodcasts.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-gray-500">No upcoming podcasts scheduled. Check back soon!</p>
                             </div>
@@ -238,7 +240,7 @@ export default function Home() {
                             <>
                                 {/* Display 2 cards per row */}
                                 <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                                    {allUpcoming.map((podcast: Podcast) => (
+                                    {displayedUpcoming.map((podcast: Podcast) => (
                                         <PodcastCard key={podcast._id} podcast={podcast} variant="thumbnail-only" />
                                     ))}
                                 </div>
