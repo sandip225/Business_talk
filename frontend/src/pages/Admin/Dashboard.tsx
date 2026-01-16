@@ -17,11 +17,14 @@ import {
     EyeOff,
     Upload,
     Info,
+    Search,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { podcastAPI, blogAPI, Blog } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
 
-type ActiveTab = 'podcasts' | 'blogs';
+type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about';
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -41,6 +44,13 @@ export default function AdminDashboard() {
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [blogsLoading, setBlogsLoading] = useState(false);
 
+    // Search and Pagination state
+    const ITEMS_PER_PAGE = 10;
+    const [podcastSearch, setPodcastSearch] = useState('');
+    const [podcastPage, setPodcastPage] = useState(1);
+    const [blogSearch, setBlogSearch] = useState('');
+    const [blogPage, setBlogPage] = useState(1);
+
     useEffect(() => {
         if (!isAuthenticated) {
             navigate('/admin/login');
@@ -50,10 +60,10 @@ export default function AdminDashboard() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // Use compact: true to exclude large image data for faster admin list loading
+                // Fetch podcasts with thumbnails for admin preview
                 // No limit - get all podcasts
                 const [podcastsRes, statsRes] = await Promise.all([
-                    podcastAPI.getAll({ compact: true }),
+                    podcastAPI.getAll(),
                     podcastAPI.getStats(),
                 ]);
                 setPodcasts(podcastsRes.data.podcasts);
@@ -135,10 +145,41 @@ export default function AdminDashboard() {
         }
     };
 
-    const filteredPodcasts = podcasts.filter((podcast) => {
-        if (filter === 'all') return true;
-        return podcast.category === filter;
+    // Filter podcasts by category AND search term
+    const searchFilteredPodcasts = podcasts.filter((podcast) => {
+        const matchesCategory = filter === 'all' ? true : podcast.category === filter;
+        const searchLower = podcastSearch.toLowerCase();
+        const matchesSearch = podcastSearch === '' ||
+            podcast.title?.toLowerCase().includes(searchLower) ||
+            podcast.guestName?.toLowerCase().includes(searchLower) ||
+            podcast.episodeNumber?.toString().includes(podcastSearch) ||
+            podcast.description?.toLowerCase().includes(searchLower);
+        return matchesCategory && matchesSearch;
     });
+
+    // Paginate podcasts
+    const totalPodcastPages = Math.ceil(searchFilteredPodcasts.length / ITEMS_PER_PAGE);
+    const paginatedPodcasts = searchFilteredPodcasts.slice(
+        (podcastPage - 1) * ITEMS_PER_PAGE,
+        podcastPage * ITEMS_PER_PAGE
+    );
+
+    // Filter blogs by search term
+    const searchFilteredBlogs = blogs.filter((blog) => {
+        const searchLower = blogSearch.toLowerCase();
+        return blogSearch === '' ||
+            blog.title?.toLowerCase().includes(searchLower) ||
+            blog.category?.toLowerCase().includes(searchLower) ||
+            blog.author?.toLowerCase().includes(searchLower) ||
+            blog.excerpt?.toLowerCase().includes(searchLower);
+    });
+
+    // Paginate blogs
+    const totalBlogPages = Math.ceil(searchFilteredBlogs.length / ITEMS_PER_PAGE);
+    const paginatedBlogs = searchFilteredBlogs.slice(
+        (blogPage - 1) * ITEMS_PER_PAGE,
+        blogPage * ITEMS_PER_PAGE
+    );
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('en-US', {
@@ -291,34 +332,49 @@ export default function AdminDashboard() {
                         {/* Podcasts Section */}
                         <div className="bg-white rounded-xl shadow-sm">
                             {/* Header */}
-                            <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <h2 className="text-lg font-bold text-gray-900">All Podcasts</h2>
-                                    <p className="text-sm text-gray-500">Manage your podcast episodes</p>
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                    {/* Filter */}
-                                    <div className="flex items-center space-x-2">
-                                        {(['all', 'upcoming', 'past'] as const).map((f) => (
-                                            <button
-                                                key={f}
-                                                onClick={() => setFilter(f)}
-                                                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${filter === f
-                                                    ? 'bg-maroon-700 text-white'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                    }`}
-                                            >
-                                                {f.charAt(0).toUpperCase() + f.slice(1)}
-                                            </button>
-                                        ))}
+                            <div className="p-6 border-b flex flex-col gap-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div>
+                                        <h2 className="text-lg font-bold text-gray-900">All Podcasts</h2>
+                                        <p className="text-sm text-gray-500">
+                                            Showing {paginatedPodcasts.length} of {searchFilteredPodcasts.length} podcasts
+                                        </p>
                                     </div>
-                                    <Link
-                                        to="/admin/podcast/new"
-                                        className="flex items-center space-x-2 px-4 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                        <span>Add Podcast</span>
-                                    </Link>
+                                    <div className="flex items-center space-x-4">
+                                        {/* Filter */}
+                                        <div className="flex items-center space-x-2">
+                                            {(['all', 'upcoming', 'past'] as const).map((f) => (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => { setFilter(f); setPodcastPage(1); }}
+                                                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${filter === f
+                                                        ? 'bg-maroon-700 text-white'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                        }`}
+                                                >
+                                                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <Link
+                                            to="/admin/podcast/new"
+                                            className="flex items-center space-x-2 px-4 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            <span>Add Podcast</span>
+                                        </Link>
+                                    </div>
+                                </div>
+                                {/* Search Bar */}
+                                <div className="relative max-w-md">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by title, guest, episode #..."
+                                        value={podcastSearch}
+                                        onChange={(e) => { setPodcastSearch(e.target.value); setPodcastPage(1); }}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                                    />
                                 </div>
                             </div>
 
@@ -329,19 +385,21 @@ export default function AdminDashboard() {
                                         <Loader2 className="w-8 h-8 animate-spin text-maroon-700 mx-auto" />
                                         <p className="text-gray-500 mt-2">Loading podcasts...</p>
                                     </div>
-                                ) : filteredPodcasts.length === 0 ? (
+                                ) : paginatedPodcasts.length === 0 ? (
                                     <div className="p-12 text-center">
-                                        <p className="text-gray-500">No podcasts found.</p>
-                                        <Link
-                                            to="/admin/podcast/new"
-                                            className="inline-flex items-center space-x-2 mt-4 text-maroon-700 hover:text-maroon-800"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                            <span>Create your first podcast</span>
-                                        </Link>
+                                        <p className="text-gray-500">{podcastSearch ? 'No podcasts match your search.' : 'No podcasts found.'}</p>
+                                        {!podcastSearch && (
+                                            <Link
+                                                to="/admin/podcast/new"
+                                                className="inline-flex items-center space-x-2 mt-4 text-maroon-700 hover:text-maroon-800"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                <span>Create your first podcast</span>
+                                            </Link>
+                                        )}
                                     </div>
                                 ) : (
-                                    filteredPodcasts.map((podcast) => (
+                                    paginatedPodcasts.map((podcast) => (
                                         <motion.div
                                             key={podcast._id}
                                             initial={{ opacity: 0 }}
@@ -397,6 +455,60 @@ export default function AdminDashboard() {
                                     ))
                                 )}
                             </div>
+
+                            {/* Pagination Controls */}
+                            {totalPodcastPages > 1 && (
+                                <div className="p-4 border-t flex items-center justify-between">
+                                    <span className="text-sm text-gray-600">
+                                        Page {podcastPage} of {totalPodcastPages}
+                                    </span>
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => setPodcastPage(p => Math.max(1, p - 1))}
+                                            disabled={podcastPage === 1}
+                                            className="flex items-center space-x-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                            <span>Previous</span>
+                                        </button>
+                                        {/* Page numbers */}
+                                        <div className="hidden sm:flex items-center space-x-1">
+                                            {Array.from({ length: Math.min(5, totalPodcastPages) }, (_, i) => {
+                                                let pageNum;
+                                                if (totalPodcastPages <= 5) {
+                                                    pageNum = i + 1;
+                                                } else if (podcastPage <= 3) {
+                                                    pageNum = i + 1;
+                                                } else if (podcastPage >= totalPodcastPages - 2) {
+                                                    pageNum = totalPodcastPages - 4 + i;
+                                                } else {
+                                                    pageNum = podcastPage - 2 + i;
+                                                }
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => setPodcastPage(pageNum)}
+                                                        className={`w-8 h-8 text-sm font-medium rounded-lg transition-colors ${podcastPage === pageNum
+                                                            ? 'bg-maroon-700 text-white'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <button
+                                            onClick={() => setPodcastPage(p => Math.min(totalPodcastPages, p + 1))}
+                                            disabled={podcastPage === totalPodcastPages}
+                                            className="flex items-center space-x-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        >
+                                            <span>Next</span>
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </>
                 )}
@@ -460,18 +572,33 @@ export default function AdminDashboard() {
                         {/* Blogs Section */}
                         <div className="bg-white rounded-xl shadow-sm">
                             {/* Header */}
-                            <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <h2 className="text-lg font-bold text-gray-900">All Blogs</h2>
-                                    <p className="text-sm text-gray-500">Manage your blog posts</p>
+                            <div className="p-6 border-b flex flex-col gap-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div>
+                                        <h2 className="text-lg font-bold text-gray-900">All Blogs</h2>
+                                        <p className="text-sm text-gray-500">
+                                            Showing {paginatedBlogs.length} of {searchFilteredBlogs.length} blogs
+                                        </p>
+                                    </div>
+                                    <Link
+                                        to="/admin/blog/new"
+                                        className="flex items-center space-x-2 px-4 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        <span>Add Blog</span>
+                                    </Link>
                                 </div>
-                                <Link
-                                    to="/admin/blog/new"
-                                    className="flex items-center space-x-2 px-4 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span>Add Blog</span>
-                                </Link>
+                                {/* Search Bar */}
+                                <div className="relative max-w-md">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by title, category, author..."
+                                        value={blogSearch}
+                                        onChange={(e) => { setBlogSearch(e.target.value); setBlogPage(1); }}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                                    />
+                                </div>
                             </div>
 
                             {/* List */}
@@ -481,19 +608,21 @@ export default function AdminDashboard() {
                                         <Loader2 className="w-8 h-8 animate-spin text-maroon-700 mx-auto" />
                                         <p className="text-gray-500 mt-2">Loading blogs...</p>
                                     </div>
-                                ) : blogs.length === 0 ? (
+                                ) : paginatedBlogs.length === 0 ? (
                                     <div className="p-12 text-center">
-                                        <p className="text-gray-500">No blogs found.</p>
-                                        <Link
-                                            to="/admin/blog/new"
-                                            className="inline-flex items-center space-x-2 mt-4 text-maroon-700 hover:text-maroon-800"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                            <span>Create your first blog post</span>
-                                        </Link>
+                                        <p className="text-gray-500">{blogSearch ? 'No blogs match your search.' : 'No blogs found.'}</p>
+                                        {!blogSearch && (
+                                            <Link
+                                                to="/admin/blog/new"
+                                                className="inline-flex items-center space-x-2 mt-4 text-maroon-700 hover:text-maroon-800"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                <span>Create your first blog post</span>
+                                            </Link>
+                                        )}
                                     </div>
                                 ) : (
-                                    blogs.map((blog) => (
+                                    paginatedBlogs.map((blog) => (
                                         <motion.div
                                             key={blog._id}
                                             initial={{ opacity: 0 }}
@@ -550,6 +679,60 @@ export default function AdminDashboard() {
                                     ))
                                 )}
                             </div>
+
+                            {/* Pagination Controls */}
+                            {totalBlogPages > 1 && (
+                                <div className="p-4 border-t flex items-center justify-between">
+                                    <span className="text-sm text-gray-600">
+                                        Page {blogPage} of {totalBlogPages}
+                                    </span>
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => setBlogPage(p => Math.max(1, p - 1))}
+                                            disabled={blogPage === 1}
+                                            className="flex items-center space-x-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                            <span>Previous</span>
+                                        </button>
+                                        {/* Page numbers */}
+                                        <div className="hidden sm:flex items-center space-x-1">
+                                            {Array.from({ length: Math.min(5, totalBlogPages) }, (_, i) => {
+                                                let pageNum;
+                                                if (totalBlogPages <= 5) {
+                                                    pageNum = i + 1;
+                                                } else if (blogPage <= 3) {
+                                                    pageNum = i + 1;
+                                                } else if (blogPage >= totalBlogPages - 2) {
+                                                    pageNum = totalBlogPages - 4 + i;
+                                                } else {
+                                                    pageNum = blogPage - 2 + i;
+                                                }
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => setBlogPage(pageNum)}
+                                                        className={`w-8 h-8 text-sm font-medium rounded-lg transition-colors ${blogPage === pageNum
+                                                            ? 'bg-maroon-700 text-white'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            }`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <button
+                                            onClick={() => setBlogPage(p => Math.min(totalBlogPages, p + 1))}
+                                            disabled={blogPage === totalBlogPages}
+                                            className="flex items-center space-x-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        >
+                                            <span>Next</span>
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </>
                 )}
