@@ -50,17 +50,16 @@ export default function Home() {
         setDisplayedPastCount(2);
     };
 
-    // Fetch upcoming podcasts - limit to 6 for performance
+    // Fetch upcoming podcasts - show all upcoming episodes
     useEffect(() => {
         const fetchUpcoming = async () => {
             setIsUpcomingLoading(true);
             try {
-                // PERFORMANCE: Limit to 6 upcoming + use compact mode
-                // Reduces payload significantly for faster initial load
+                // Fetch all upcoming podcasts with compact mode for performance
+                // Compact mode excludes Base64 images, YouTube thumbnails will be used
                 const response = await podcastAPI.getAll({
                     category: 'upcoming',
-                    limit: 6,  // Only fetch 6 upcoming podcasts
-                    compact: true  // Exclude large Base64 images
+                    compact: true  // Exclude large Base64 images, use YouTube fallback
                 });
                 setUpcomingPodcasts(response.data.podcasts || []);
                 setUpcomingTotal(response.data.pagination?.total || 0);
