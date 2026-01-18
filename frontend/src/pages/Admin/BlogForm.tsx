@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { blogAPI, BlogInput, categoryAPI, Category } from '../../services/api';
 import { useAuthStore } from '../../store/useStore';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 export default function BlogForm() {
     const navigate = useNavigate();
@@ -231,13 +233,33 @@ export default function BlogForm() {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Content *
                         </label>
-                        <textarea
-                            name="content"
+                        <ReactQuill
+                            theme="snow"
                             value={formData.content}
-                            onChange={handleChange}
-                            required
-                            rows={10}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent resize-none"
+                            onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                            modules={{
+                                toolbar: [
+                                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                    [{ 'font': [] }],
+                                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                                    ['bold', 'italic', 'underline', 'strike'],
+                                    [{ 'color': [] }, { 'background': [] }],
+                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                    [{ 'align': [] }],
+                                    ['link', 'image'],
+                                    ['clean']
+                                ]
+                            }}
+                            formats={[
+                                'header', 'font', 'size',
+                                'bold', 'italic', 'underline', 'strike',
+                                'color', 'background',
+                                'list', 'bullet',
+                                'align',
+                                'link', 'image'
+                            ]}
+                            className="bg-white rounded-lg"
+                            style={{ height: '300px', marginBottom: '50px' }}
                             placeholder="Write your blog content here..."
                         />
                     </div>

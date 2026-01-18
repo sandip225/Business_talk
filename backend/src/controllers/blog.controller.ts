@@ -118,18 +118,39 @@ export const getAdminBlogById = async (req: Request, res: Response) => {
 // Create new blog (admin only)
 export const createBlog = async (req: Request, res: Response) => {
     try {
-        console.log('📝 Creating new blog:', req.body.title);
+        console.log('📝 Creating new blog with data:', JSON.stringify(req.body, null, 2));
         const { title, excerpt, content, author, category, image, readTime, tags, isPublished } = req.body;
 
+        // Validate required fields
+        if (!title || title.trim() === '') {
+            console.error('❌ Validation failed: Title is required');
+            return res.status(400).json({ message: 'Title is required and cannot be empty' });
+        }
+
+        if (!excerpt || excerpt.trim() === '') {
+            console.error('❌ Validation failed: Excerpt is required');
+            return res.status(400).json({ message: 'Excerpt is required and cannot be empty' });
+        }
+
+        if (!content || content.trim() === '') {
+            console.error('❌ Validation failed: Content is required');
+            return res.status(400).json({ message: 'Content is required and cannot be empty' });
+        }
+
+        if (!category || category.trim() === '') {
+            console.error('❌ Validation failed: Category is required');
+            return res.status(400).json({ message: 'Category is required and cannot be empty' });
+        }
+
         const blog = new Blog({
-            title,
-            excerpt,
-            content,
-            author: author || 'Deepak Bhatt',
-            category,
+            title: title.trim(),
+            excerpt: excerpt.trim(),
+            content: content.trim(),
+            author: author?.trim() || 'Deepak Bhatt',
+            category: category.trim(),
             image: image || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800',
             readTime: readTime || '5 min read',
-            tags: tags || [],
+            tags: Array.isArray(tags) ? tags : [],
             isPublished: isPublished || false,
         });
 
@@ -138,8 +159,24 @@ export const createBlog = async (req: Request, res: Response) => {
 
         res.status(201).json({ message: 'Blog created successfully', blog });
     } catch (error: any) {
-        console.error('❌ Error creating blog:', error.message);
-        res.status(500).json({ message: 'Failed to create blog', error: error.message });
+        console.error('❌ Error creating blog:', error);
+        console.error('Error stack:', error.stack);
+
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map((err: any) => err.message);
+            return res.status(400).json({
+                message: 'Validation failed',
+                errors: messages,
+                details: error.message
+            });
+        }
+
+        res.status(500).json({
+            message: 'Failed to create blog',
+            error: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 
@@ -372,10 +409,10 @@ const sampleBlogs = [
 export const seedBlogs = async (req: Request, res: Response) => {
     try {
         console.log('🌱 Starting blog seeding...');
-        
+
         let addedCount = 0;
         const results: string[] = [];
-        
+
         for (const blogData of sampleBlogs) {
             // Check if blog with same title already exists
             const exists = await Blog.findOne({ title: blogData.title });
@@ -392,9 +429,9 @@ export const seedBlogs = async (req: Request, res: Response) => {
 
         const totalCount = await Blog.countDocuments();
         const publishedCount = await Blog.countDocuments({ isPublished: true });
-        
+
         console.log(`🎉 Seeding complete! Added ${addedCount} new blogs`);
-        
+
         res.json({
             message: `Successfully seeded ${addedCount} new blogs`,
             results,

@@ -35,7 +35,7 @@ export default function PodcastForm() {
     } = useForm<PodcastInput>({
         defaultValues: {
             category: 'upcoming',
-            scheduledTime: '10:00 AM EST',
+            scheduledTime: '10:00 AM IST',
             tags: [],
         },
     });
@@ -335,7 +335,7 @@ export default function PodcastForm() {
                                 <input
                                     {...register('scheduledTime')}
                                     className="input-field"
-                                    placeholder="10:00 AM EST"
+                                    placeholder="10:00 AM IST"
                                 />
                             </div>
                         </div>
@@ -428,7 +428,7 @@ export default function PodcastForm() {
                                     <span>Add Guest</span>
                                 </button>
                             </div>
-                            
+
                             {category === 'upcoming' && (
                                 <p className="text-sm text-gray-500 mb-4">
                                     Guest information is optional for upcoming podcasts

@@ -34,10 +34,21 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    vendor: ['react', 'react-dom', 'react-router-dom'],
-                    framer: ['framer-motion'],
-                    ui: ['lucide-react'],
+                    'react-vendor': ['react', 'react-dom'],
+                    'router': ['react-router-dom'],
+                    'framer': ['framer-motion'],
+                    'ui': ['lucide-react'],
+                    'forms': ['react-hook-form'],
+                    'editor': ['react-quill'],
                 },
+            },
+        },
+        chunkSizeWarningLimit: 1000,
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: true,
+                drop_debugger: true,
             },
         },
     },

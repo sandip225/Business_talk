@@ -5,6 +5,8 @@ import { Save, Loader2, Info, Plus, Trash2, Mic, FileText, Calendar, Upload, Log
 import { useAuthStore } from '../../store/useStore';
 import { aboutUsAPI, AboutUsContent } from '../../services/api';
 import logoImage from '../../assets/logo.jpg';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const defaultContent: AboutUsContent = {
     title: 'About Business Talk',
@@ -225,13 +227,28 @@ export default function AboutEditor() {
                                     <div key={index} className="relative">
                                         <div className="flex items-start gap-2">
                                             <span className="text-xs text-gray-500 mt-3 w-6">{index + 1}.</span>
-                                            <textarea
-                                                value={paragraph}
-                                                onChange={(e) => updateParagraph(index, e.target.value)}
-                                                rows={3}
-                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent resize-none text-justify"
-                                                placeholder={`Enter paragraph ${index + 1}...`}
-                                            />
+                                            <div className="flex-1">
+                                                <ReactQuill
+                                                    theme="snow"
+                                                    value={paragraph}
+                                                    onChange={(value) => updateParagraph(index, value)}
+                                                    modules={{
+                                                        toolbar: [
+                                                            ['bold', 'italic', 'underline'],
+                                                            ['link'],
+                                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                            ['clean']
+                                                        ]
+                                                    }}
+                                                    formats={[
+                                                        'bold', 'italic', 'underline',
+                                                        'link',
+                                                        'list', 'bullet'
+                                                    ]}
+                                                    className="bg-white rounded-lg"
+                                                    placeholder={`Enter paragraph ${index + 1}...`}
+                                                />
+                                            </div>
                                             {content.paragraphs.length > 1 && (
                                                 <button
                                                     onClick={() => removeParagraph(index)}
@@ -290,9 +307,11 @@ export default function AboutEditor() {
                             </div>
                             <div className="text-justify space-y-3">
                                 {content.paragraphs.map((paragraph, index) => (
-                                    <p key={index} className="text-gray-700 text-sm leading-relaxed">
-                                        {paragraph}
-                                    </p>
+                                    <div
+                                        key={index}
+                                        className="text-gray-700 text-sm leading-relaxed"
+                                        dangerouslySetInnerHTML={{ __html: paragraph }}
+                                    />
                                 ))}
                             </div>
                         </div>
