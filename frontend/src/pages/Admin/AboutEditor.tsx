@@ -231,7 +231,7 @@ export default function AboutEditor() {
                                                 <ReactQuill
                                                     theme="snow"
                                                     value={paragraph}
-                                                    onChange={(value) => updateParagraph(index, value)}
+                                                    onChange={(value: string) => updateParagraph(index, value)}
                                                     modules={{
                                                         toolbar: [
                                                             ['bold', 'italic', 'underline'],

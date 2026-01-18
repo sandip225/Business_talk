@@ -236,7 +236,7 @@ export default function BlogForm() {
                         <ReactQuill
                             theme="snow"
                             value={formData.content}
-                            onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                            onChange={(value: string) => setFormData(prev => ({ ...prev, content: value }))}
                             modules={{
                                 toolbar: [
                                     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
