@@ -55,11 +55,12 @@ export default function Home() {
         const fetchUpcoming = async () => {
             setIsUpcomingLoading(true);
             try {
-                // Fetch all upcoming podcasts with compact mode for performance
-                // Compact mode excludes Base64 images, YouTube thumbnails will be used
+                // Fetch upcoming podcasts WITHOUT compact mode
+                // Upcoming podcasts have uploaded thumbnails but NO YouTube URLs yet
+                // Need full thumbnailImage field to display promotional images
                 const response = await podcastAPI.getAll({
-                    category: 'upcoming',
-                    compact: true  // Exclude large Base64 images, use YouTube fallback
+                    category: 'upcoming'
+                    // NO compact mode - include thumbnailImage for promotional images
                 });
                 setUpcomingPodcasts(response.data.podcasts || []);
                 setUpcomingTotal(response.data.pagination?.total || 0);
