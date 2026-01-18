@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import viteCompression from 'vite-plugin-compression';
-import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,11 +17,6 @@ export default defineConfig({
         viteCompression({
             algorithm: 'brotliCompress',
             ext: '.br',
-        }),
-        ViteImageOptimizer({
-            png: { quality: 80 },
-            jpeg: { quality: 80 },
-            webp: { quality: 80, lossless: true },
         }),
     ],
     resolve: {
@@ -44,13 +38,6 @@ export default defineConfig({
             },
         },
         chunkSizeWarningLimit: 1000,
-        minify: 'terser',
-        terserOptions: {
-            compress: {
-                drop_console: true,
-                drop_debugger: true,
-            },
-        },
     },
     server: {
         port: 5173,
