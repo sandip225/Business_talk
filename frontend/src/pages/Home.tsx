@@ -57,10 +57,12 @@ export default function Home() {
         const fetchUpcoming = async () => {
             setIsUpcomingLoading(true);
             try {
-                // Fetch all upcoming podcasts WITHOUT compact mode to show custom thumbnails
-                // Upcoming podcasts are few (~6-10), so full payload is manageable (~1-2MB)
+                // PERFORMANCE: Limit to 6 upcoming + use compact mode
+                // Reduces payload significantly for faster initial load
                 const response = await podcastAPI.getAll({
-                    category: 'upcoming'
+                    category: 'upcoming',
+                    limit: 6,  // Only fetch 6 upcoming podcasts
+                    compact: true  // Exclude large Base64 images
                 });
                 setUpcomingPodcasts(response.data.podcasts || []);
                 setUpcomingTotal(response.data.pagination?.total || 0);
@@ -117,11 +119,13 @@ export default function Home() {
             console.log('[Home] Fetching PAST podcasts directly from API...');
 
             try {
-                // Include images for better visual experience
-                // Will use YouTube thumbnails as fallback if thumbnailImage is empty
+                // PERFORMANCE OPTIMIZATION: Use compact mode + limit initial load
+                // This reduces payload from ~2MB to ~50KB for faster page load
                 const response = await podcastAPI.getAll({
                     category: 'past',
-                    // No compact mode - include all images
+                    limit: 4,  // Only load 4 initially for speed
+                    page: 1,
+                    compact: true  // Exclude Base64 images, use YouTube thumbnails
                 });
 
                 const podcasts = response.data.podcasts || [];
@@ -130,11 +134,8 @@ export default function Home() {
                 setPastPodcastsLocal(podcasts);
                 setError(null);
 
-                // Load first 2, then immediately load 4 more
+                // Show first 2 immediately
                 setDisplayedPastCount(INITIAL_LOAD);
-                setTimeout(() => {
-                    setDisplayedPastCount(INITIAL_LOAD + SECOND_LOAD);
-                }, 100);
             } catch (err) {
                 console.error('[Home] Error fetching past podcasts:', err);
                 setError('Failed to load podcasts. Please try again later.');
