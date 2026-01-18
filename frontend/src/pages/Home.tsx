@@ -37,9 +37,7 @@ export default function Home() {
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const INITIAL_LOAD = 2;
-    const SECOND_LOAD = 4;
     const BATCH_SIZE = 6;
-    const UPCOMING_BATCH_SIZE = 6;
 
     // Set page title
     useEffect(() => {
