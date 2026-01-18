@@ -117,11 +117,11 @@ export default function Home() {
             console.log('[Home] Fetching PAST podcasts directly from API...');
 
             try {
-                // Use compact mode for past podcasts too - massive speed improvement
-                // Falls back to YouTube thumbnails (external URLs, not Base64)
+                // Include images for better visual experience
+                // Will use YouTube thumbnails as fallback if thumbnailImage is empty
                 const response = await podcastAPI.getAll({
                     category: 'past',
-                    compact: true  // Exclude Base64 thumbnailImage for faster loading
+                    // No compact mode - include all images
                 });
 
                 const podcasts = response.data.podcasts || [];
