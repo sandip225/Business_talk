@@ -81,10 +81,10 @@ export default function Home() {
 
         setIsLoadingMoreUpcoming(true);
         setTimeout(() => {
-            setDisplayedUpcomingCount(prev => Math.min(prev + UPCOMING_BATCH_SIZE, upcomingPodcasts.length));
+            setDisplayedUpcomingCount(prev => Math.min(prev + 6, upcomingPodcasts.length));
             setIsLoadingMoreUpcoming(false);
         }, 300);
-    }, [displayedUpcomingCount, upcomingPodcasts.length, isLoadingMoreUpcoming, UPCOMING_BATCH_SIZE]);
+    }, [displayedUpcomingCount, upcomingPodcasts.length, isLoadingMoreUpcoming]);
 
     // Setup intersection observer for upcoming podcasts infinite scroll
     useEffect(() => {
