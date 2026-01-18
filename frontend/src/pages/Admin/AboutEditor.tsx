@@ -234,16 +234,28 @@ export default function AboutEditor() {
                                                     onChange={(value: string) => updateParagraph(index, value)}
                                                     modules={{
                                                         toolbar: [
-                                                            ['bold', 'italic', 'underline'],
-                                                            ['link'],
-                                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                                            [{ 'font': [] }],
+                                                            [{ 'size': ['small', false, 'large', 'huge'] }],
+                                                            ['bold', 'italic', 'underline', 'strike'],
+                                                            [{ 'color': [] }, { 'background': [] }],
+                                                            [{ 'script': 'sub' }, { 'script': 'super' }],
+                                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                                                            [{ 'align': [] }],
+                                                            ['blockquote', 'code-block'],
+                                                            ['link', 'image', 'video'],
                                                             ['clean']
                                                         ]
                                                     }}
                                                     formats={[
-                                                        'bold', 'italic', 'underline',
-                                                        'link',
-                                                        'list', 'bullet'
+                                                        'header', 'font', 'size',
+                                                        'bold', 'italic', 'underline', 'strike',
+                                                        'color', 'background',
+                                                        'script',
+                                                        'list', 'bullet', 'indent',
+                                                        'align',
+                                                        'blockquote', 'code-block',
+                                                        'link', 'image', 'video'
                                                     ]}
                                                     className="bg-white rounded-lg"
                                                     placeholder={`Enter paragraph ${index + 1}...`}
