@@ -164,6 +164,16 @@ export default function PodcastForm() {
                 alert('At least one guest with name and title is required for past podcasts');
                 return;
             }
+
+            // Warn if no thumbnail is provided (will fall back to guest image or YouTube thumbnail)
+            if (!thumbnailPreview && !data.thumbnailImage) {
+                const confirmProceed = window.confirm(
+                    '⚠️ Warning: No episode thumbnail uploaded.\n\n' +
+                    'The podcast card will show the guest headshot or YouTube thumbnail as fallback.\n\n' +
+                    'Are you sure you want to proceed without uploading a promotional thumbnail?'
+                );
+                if (!confirmProceed) return;
+            }
         }
 
         setIsLoading(true);
@@ -343,15 +353,19 @@ export default function PodcastForm() {
                         {/* Episode Thumbnail */}
                         <div className="border-t pt-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Episode Thumbnail {category === 'upcoming' && <span className="text-red-500">*</span>}
+                                Episode Thumbnail (Promotional Image) {category === 'upcoming' && <span className="text-red-500">*</span>}
                             </h2>
-                            {category === 'upcoming' ? (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                <p className="text-sm text-blue-800 font-medium">
+                                    ℹ️ This is the MAIN image shown on podcast cards throughout the website.
+                                </p>
+                                <p className="text-xs text-blue-700 mt-1">
+                                    Upload your creative/promotional thumbnail here (NOT the guest headshot).
+                                </p>
+                            </div>
+                            {category === 'upcoming' && (
                                 <p className="text-sm text-red-600 font-medium mb-4">
                                     ⚠️ Thumbnail is REQUIRED for upcoming podcasts
-                                </p>
-                            ) : (
-                                <p className="text-sm text-gray-500 mb-4">
-                                    Upload a custom thumbnail OR paste an image URL. YouTube thumbnail will be used automatically if no image is provided.
                                 </p>
                             )}
                             <div className="space-y-4">
@@ -503,8 +517,11 @@ export default function PodcastForm() {
 
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Guest Image
+                                                    Guest Headshot (Profile Photo)
                                                 </label>
+                                                <p className="text-xs text-gray-500 mb-2">
+                                                    Upload the guest's profile photo/headshot here. This appears in the guest info section, NOT as the main podcast card image.
+                                                </p>
                                                 <div className="space-y-3">
                                                     <div className="flex items-center space-x-4">
                                                         {guest.image && (
