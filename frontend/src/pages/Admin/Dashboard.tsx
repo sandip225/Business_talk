@@ -30,12 +30,9 @@ import {
     RefreshCw,
     Server,
     Database,
-    ExternalLink,
-    HardDrive,
-    Cpu,
-    ShieldCheck
+    ExternalLink
 } from 'lucide-react';
-import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, mongoAPI, settingsAPI, SiteSettings } from '../../services/api';
+import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, settingsAPI, SiteSettings } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
 
 type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about' | 'settings' | 'calendar';
@@ -73,12 +70,7 @@ export default function AdminDashboard() {
     const [backendDeployments, setBackendDeployments] = useState<any[]>([]);
     const [renderLoading, setRenderLoading] = useState(false);
 
-    // MongoDB State
-    const [mongoPublicKey, setMongoPublicKey] = useState(localStorage.getItem('mongoPublicKey') || '');
-    const [mongoPrivateKey, setMongoPrivateKey] = useState(localStorage.getItem('mongoPrivateKey') || '');
-    const [mongoProjectId, setMongoProjectId] = useState(localStorage.getItem('mongoProjectId') || '');
-    const [mongoClusters, setMongoClusters] = useState<any[]>([]);
-    const [mongoLoading, setMongoLoading] = useState(false);
+
 
     const [systemHealth, setSystemHealth] = useState<{ status: string; database?: { state: string; host: string } } | null>(null);
     const [healthLoading, setHealthLoading] = useState(false);
@@ -121,10 +113,6 @@ export default function AdminDashboard() {
                 fetchRenderDeployments(cleanFe, cleanBe);
             }
 
-            if (mongoPublicKey && mongoPrivateKey && mongoProjectId) {
-                fetchMongoClusters();
-            }
-
             // Fetch episode loading settings
             fetchEpisodeSettings();
         }
@@ -142,17 +130,9 @@ export default function AdminDashboard() {
         localStorage.setItem('frontendServiceId', cleanFe);
         localStorage.setItem('backendServiceId', cleanBe);
 
-        localStorage.setItem('mongoPublicKey', mongoPublicKey);
-        localStorage.setItem('mongoPrivateKey', mongoPrivateKey);
-        localStorage.setItem('mongoProjectId', mongoProjectId);
-
         setSettingsSaved(true);
         setTimeout(() => setSettingsSaved(false), 3000);
-        // Using alert since toast might not be configured in this component yet, or reusing existing error state
-        // Checking imports, toast is not imported. I'll use simple alert or console for now, or add toast if I can find it.
-        // Actually I don't see toast imported in previous file content. I'll just use the visual feedback of the button.
         fetchRenderDeployments(cleanFe, cleanBe);
-        fetchMongoClusters();
         saveEpisodeSettings();
     };
 
@@ -199,21 +179,6 @@ export default function AdminDashboard() {
             console.error('Failed to load deployments:', error);
         } finally {
             setRenderLoading(false);
-        }
-    };
-
-    const fetchMongoClusters = async () => {
-        if (!mongoPublicKey || !mongoPrivateKey || !mongoProjectId) return;
-
-        setMongoLoading(true);
-        try {
-            const response = await mongoAPI.getClusters(mongoPublicKey, mongoPrivateKey, mongoProjectId);
-            // API returns { results: [...] } or just array depending on version, controller returns data directly
-            setMongoClusters(response.data.results || response.data || []);
-        } catch (error) {
-            console.error('Failed to load mongo clusters:', error);
-        } finally {
-            setMongoLoading(false);
         }
     };
 
@@ -1584,52 +1549,6 @@ export default function AdminDashboard() {
                         </motion.div>
 
                         {/* MongoDB Configuration */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.15 }}
-                            className="bg-white rounded-xl shadow-sm p-6"
-                        >
-                            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                <Database className="w-6 h-6 text-green-700" />
-                                MongoDB Configuration
-                            </h2>
-
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Public Key</label>
-                                        <input
-                                            type="text"
-                                            value={mongoPublicKey}
-                                            onChange={(e) => setMongoPublicKey(e.target.value)}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            placeholder="Atlas Public Key"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Private Key</label>
-                                        <input
-                                            type="password"
-                                            value={mongoPrivateKey}
-                                            onChange={(e) => setMongoPrivateKey(e.target.value)}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            placeholder="Atlas Private Key"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Project ID</label>
-                                    <input
-                                        type="text"
-                                        value={mongoProjectId}
-                                        onChange={(e) => setMongoProjectId(e.target.value)}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                        placeholder="Atlas Project ID"
-                                    />
-                                </div>
-                            </div>
-                        </motion.div>
 
                         <div className="flex justify-end">
                             <button
@@ -1646,142 +1565,6 @@ export default function AdminDashboard() {
                                 )}
                             </button>
                         </div>
-
-                        {/* MongoDB Clusters */}
-                        {mongoProjectId && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="bg-white rounded-xl shadow-sm p-6"
-                            >
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                        <Database className="w-6 h-6 text-green-700" />
-                                        Database Clusters
-                                    </h2>
-                                    <button
-                                        onClick={() => fetchMongoClusters()}
-                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                        disabled={mongoLoading}
-                                    >
-                                        <RefreshCw className={`w-5 h-5 text-gray-600 ${mongoLoading ? 'animate-spin' : ''}`} />
-                                    </button>
-                                </div>
-
-                                {mongoLoading ? (
-                                    <div className="flex justify-center py-12">
-                                        <Loader2 className="w-8 h-8 animate-spin text-maroon-700" />
-                                    </div>
-                                ) : mongoClusters.length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {mongoClusters.map((cluster: any) => (
-                                            <div key={cluster.id} className="border border-gray-200 rounded-lg p-5 hover:border-green-500 transition-colors bg-gray-50">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div>
-                                                        <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                                                            {cluster.name}
-                                                            <a
-                                                                href={`https://cloud.mongodb.com/v2/${mongoProjectId}#clusters`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-gray-400 hover:text-green-700 transition-colors"
-                                                                title="View in Atlas"
-                                                            >
-                                                                <ExternalLink className="w-4 h-4" />
-                                                            </a>
-                                                        </h3>
-                                                        <p className="text-xs text-gray-500 font-mono mt-1">
-                                                            ID: {cluster.id}
-                                                        </p>
-                                                    </div>
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${cluster.stateName === 'IDLE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                                        }`}>
-                                                        <div className={`w-2 h-2 rounded-full ${cluster.stateName === 'IDLE' ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                                                        {cluster.stateName}
-                                                    </span>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                                    <div className="bg-white p-3 rounded border border-gray-100">
-                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                                                            <HardDrive className="w-3.5 h-3.5" />
-                                                            Disk Size
-                                                        </div>
-                                                        <p className="font-semibold text-gray-900">
-                                                            {cluster.diskSizeGB ? `${cluster.diskSizeGB} GB` : 'Auto-scaling'}
-                                                        </p>
-                                                    </div>
-                                                    <div className="bg-white p-3 rounded border border-gray-100">
-                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                                                            <Cpu className="w-3.5 h-3.5" />
-                                                            Instance
-                                                        </div>
-                                                        <p className="font-semibold text-gray-900">
-                                                            {cluster.providerSettings?.instanceSizeName || 'Serverless'}
-                                                        </p>
-                                                    </div>
-                                                    <div className="bg-white p-3 rounded border border-gray-100">
-                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                                                            <Database className="w-3.5 h-3.5" />
-                                                            Version
-                                                        </div>
-                                                        <p className="font-semibold text-gray-900">
-                                                            v{cluster.mongoDBVersion}
-                                                        </p>
-                                                    </div>
-                                                    <div className="bg-white p-3 rounded border border-gray-100">
-                                                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                                                            <ShieldCheck className="w-3.5 h-3.5" />
-                                                            Backup
-                                                        </div>
-                                                        <p className={`font-semibold ${cluster.backupEnabled ? 'text-green-700' : 'text-gray-500'}`}>
-                                                            {cluster.backupEnabled ? 'Enabled' : 'Disabled'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="bg-gray-800 rounded p-3 relative group">
-                                                    <p className="text-xs text-gray-400 mb-1 uppercase tracking-wider font-semibold">Connection String (Standard)</p>
-                                                    <code className="text-xs text-green-400 font-mono break-all block">
-                                                        {cluster.connectionStrings?.standard
-                                                            ? cluster.connectionStrings.standard.replace(/\/\/([^:]+):([^@]+)@/, '//****:****@')
-                                                            : 'Unavailable'}
-                                                    </code>
-                                                    {cluster.connectionStrings?.standard && (
-                                                        <button
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(cluster.connectionStrings.standard);
-                                                                alert('Connection string copied!');
-                                                            }}
-                                                            className="absolute top-2 right-2 p-1.5 bg-gray-700 rounded text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-600 hover:text-white"
-                                                            title="Copy"
-                                                        >
-                                                            <Copy className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                </div>
-
-                                                <div className="mt-4 flex items-center justify-between text-xs text-gray-500 border-t border-gray-200 pt-3">
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="font-semibold">Region:</span>
-                                                        {cluster.providerSettings?.regionName?.replace(/_/g, ' ')}
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="font-semibold">Type:</span>
-                                                        {cluster.replicationSpec?.class || cluster.clusterType}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-12 text-gray-500">
-                                        No clusters found or configuration incorrect
-                                    </div>
-                                )}
-                            </motion.div>
-                        )}
 
                         {/* Recent Deployments */}
                         {renderApiKey && (
