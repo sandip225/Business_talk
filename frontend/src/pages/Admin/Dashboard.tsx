@@ -35,7 +35,7 @@ import {
     Cpu,
     ShieldCheck
 } from 'lucide-react';
-import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, mongoAPI } from '../../services/api';
+import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, mongoAPI, settingsAPI, SiteSettings } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
 
 type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about' | 'settings' | 'calendar';
@@ -85,6 +85,14 @@ export default function AdminDashboard() {
 
     const [settingsSaved, setSettingsSaved] = useState(false);
 
+    // Episode Loading Settings State
+    const [episodeSettings, setEpisodeSettings] = useState<SiteSettings>({
+        upcomingInitialLoad: 4,
+        upcomingBatchSize: 4,
+        pastInitialLoad: 4,
+        pastBatchSize: 6,
+    });
+
     // Set page title
     useEffect(() => {
         document.title = "Business Talk | Admin Dashboard";
@@ -116,6 +124,9 @@ export default function AdminDashboard() {
             if (mongoPublicKey && mongoPrivateKey && mongoProjectId) {
                 fetchMongoClusters();
             }
+
+            // Fetch episode loading settings
+            fetchEpisodeSettings();
         }
     }, [activeTab, frontendServiceId, backendServiceId]);
 
@@ -142,6 +153,7 @@ export default function AdminDashboard() {
         // Actually I don't see toast imported in previous file content. I'll just use the visual feedback of the button.
         fetchRenderDeployments(cleanFe, cleanBe);
         fetchMongoClusters();
+        saveEpisodeSettings();
     };
 
     const checkSystemHealth = async () => {
@@ -202,6 +214,26 @@ export default function AdminDashboard() {
             console.error('Failed to load mongo clusters:', error);
         } finally {
             setMongoLoading(false);
+        }
+    };
+
+    // Fetch episode loading settings
+    const fetchEpisodeSettings = async () => {
+        try {
+            const response = await settingsAPI.get();
+            setEpisodeSettings(response.data);
+        } catch (error) {
+            console.error('Error fetching episode settings:', error);
+        }
+    };
+
+    // Save episode loading settings
+    const saveEpisodeSettings = async () => {
+        try {
+            await settingsAPI.update(episodeSettings);
+        } catch (error) {
+            console.error('Error saving episode settings:', error);
+            alert('Failed to save episode settings');
         }
     };
 
@@ -1440,6 +1472,112 @@ export default function AdminDashboard() {
                                         <p className="text-gray-500 text-xs mt-1">
                                             Paste the full URL or Service ID.
                                         </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Episode Loading Configuration */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.12 }}
+                            className="bg-white rounded-xl shadow-sm p-6"
+                        >
+                            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <BarChart3 className="w-6 h-6 text-blue-600" />
+                                Episode Loading Configuration
+                            </h2>
+                            <p className="text-sm text-gray-500 mb-6">
+                                Configure how many episodes are displayed initially and loaded on scroll for the home page.
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Upcoming Episodes */}
+                                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                                    <h3 className="font-semibold text-green-800 mb-4 flex items-center gap-2">
+                                        <Calendar className="w-5 h-5" />
+                                        Upcoming Episodes
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Initial Load
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="50"
+                                                value={episodeSettings.upcomingInitialLoad}
+                                                onChange={(e) => setEpisodeSettings(prev => ({
+                                                    ...prev,
+                                                    upcomingInitialLoad: parseInt(e.target.value) || 4
+                                                }))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Episodes on page load</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Scroll Batch
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="50"
+                                                value={episodeSettings.upcomingBatchSize}
+                                                onChange={(e) => setEpisodeSettings(prev => ({
+                                                    ...prev,
+                                                    upcomingBatchSize: parseInt(e.target.value) || 4
+                                                }))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Episodes per scroll</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Past Episodes */}
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <h3 className="font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                                        <Clock className="w-5 h-5" />
+                                        Past Episodes
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Initial Load
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="50"
+                                                value={episodeSettings.pastInitialLoad}
+                                                onChange={(e) => setEpisodeSettings(prev => ({
+                                                    ...prev,
+                                                    pastInitialLoad: parseInt(e.target.value) || 4
+                                                }))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Episodes on page load</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Scroll Batch
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="50"
+                                                value={episodeSettings.pastBatchSize}
+                                                onChange={(e) => setEpisodeSettings(prev => ({
+                                                    ...prev,
+                                                    pastBatchSize: parseInt(e.target.value) || 6
+                                                }))}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Episodes per scroll</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

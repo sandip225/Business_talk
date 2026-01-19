@@ -4,8 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PodcastCard from '../components/podcast/PodcastCard';
 import StayUpdated from '../components/layout/StayUpdated';
-import { podcastAPI, Podcast } from '../services/api';
-// Removed unused usePodcastStore import
+import { podcastAPI, Podcast, settingsAPI, SiteSettings } from '../services/api';
 import logoImage from '../assets/logo.jpg';
 
 export default function Home() {
@@ -24,30 +23,51 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
 
-    // Pagination for upcoming podcasts (show all by default)
-    const [displayedUpcomingCount, setDisplayedUpcomingCount] = useState(999); // Show all
+    // Pagination for upcoming podcasts
+    const [displayedUpcomingCount, setDisplayedUpcomingCount] = useState(4);
     const [isLoadingMoreUpcoming, setIsLoadingMoreUpcoming] = useState(false);
     const upcomingObserverRef = useRef<IntersectionObserver | null>(null);
     const upcomingLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
     // Pagination for past podcasts only
-    const [displayedPastCount, setDisplayedPastCount] = useState(2);
+    const [displayedPastCount, setDisplayedPastCount] = useState(4);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    const INITIAL_LOAD = 2;
-    const BATCH_SIZE = 6;
+    // Dynamic settings from API
+    const [settings, setSettings] = useState<SiteSettings>({
+        upcomingInitialLoad: 4,
+        upcomingBatchSize: 4,
+        pastInitialLoad: 4,
+        pastBatchSize: 6,
+    });
 
     // Set page title
     useEffect(() => {
         document.title = "Business Talk | The World's Premier Research-Focused Podcast Series";
     }, []);
 
+    // Fetch settings on mount
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const response = await settingsAPI.get();
+                setSettings(response.data);
+                // Update initial counts based on settings
+                setDisplayedUpcomingCount(response.data.upcomingInitialLoad);
+                setDisplayedPastCount(response.data.pastInitialLoad);
+            } catch (error) {
+                console.log('[Home] Using default settings');
+            }
+        };
+        fetchSettings();
+    }, []);
+
     const handleRetry = () => {
         setError(null);
         setRetryCount(prev => prev + 1);
-        setDisplayedPastCount(2);
+        setDisplayedPastCount(settings.pastInitialLoad);
     };
 
     // Fetch upcoming podcasts - show all upcoming episodes
@@ -81,10 +101,10 @@ export default function Home() {
 
         setIsLoadingMoreUpcoming(true);
         setTimeout(() => {
-            setDisplayedUpcomingCount(prev => Math.min(prev + 6, upcomingPodcasts.length));
+            setDisplayedUpcomingCount(prev => Math.min(prev + settings.upcomingBatchSize, upcomingPodcasts.length));
             setIsLoadingMoreUpcoming(false);
         }, 300);
-    }, [displayedUpcomingCount, upcomingPodcasts.length, isLoadingMoreUpcoming]);
+    }, [displayedUpcomingCount, upcomingPodcasts.length, isLoadingMoreUpcoming, settings.upcomingBatchSize]);
 
     // Setup intersection observer for upcoming podcasts infinite scroll
     useEffect(() => {
@@ -130,8 +150,8 @@ export default function Home() {
                 setPastPodcastsLocal(podcasts);
                 setError(null);
 
-                // Show first 2 immediately
-                setDisplayedPastCount(INITIAL_LOAD);
+                // Don't reset displayedPastCount here - settings effect handles initial count
+                // setDisplayedPastCount(settings.pastInitialLoad);
             } catch (err) {
                 console.error('[Home] Error fetching past podcasts:', err);
                 setError('Failed to load podcasts. Please try again later.');
@@ -149,10 +169,10 @@ export default function Home() {
 
         setIsLoadingMore(true);
         setTimeout(() => {
-            setDisplayedPastCount(prev => Math.min(prev + BATCH_SIZE, pastPodcasts.length));
+            setDisplayedPastCount(prev => Math.min(prev + settings.pastBatchSize, pastPodcasts.length));
             setIsLoadingMore(false);
         }, 300);
-    }, [displayedPastCount, pastPodcasts.length, isLoadingMore]);
+    }, [displayedPastCount, pastPodcasts.length, isLoadingMore, settings.pastBatchSize]);
 
     // Setup intersection observer for infinite scroll
     useEffect(() => {

@@ -284,5 +284,19 @@ export const mongoAPI = {
         api.post('/mongodb/clusters', { publicKey, privateKey, projectId }),
 };
 
+// Site Settings Types
+export interface SiteSettings {
+    upcomingInitialLoad: number;
+    upcomingBatchSize: number;
+    pastInitialLoad: number;
+    pastBatchSize: number;
+}
+
+// Settings API
+export const settingsAPI = {
+    get: () => api.get<SiteSettings>('/settings'),
+    update: (settings: Partial<SiteSettings>) => api.put<{ message: string; settings: SiteSettings }>('/settings', settings),
+};
+
 export default api;
 
