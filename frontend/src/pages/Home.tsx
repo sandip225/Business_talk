@@ -117,12 +117,10 @@ export default function Home() {
             console.log('[Home] Fetching PAST podcasts directly from API...');
 
             try {
-                // PERFORMANCE OPTIMIZATION: Use compact mode + limit initial load
-                // This reduces payload from ~2MB to ~50KB for faster page load
+                // Fetch ALL past podcasts with compact mode
+                // Compact mode excludes Base64 images, uses YouTube thumbnails
                 const response = await podcastAPI.getAll({
                     category: 'past',
-                    limit: 4,  // Only load 4 initially for speed
-                    page: 1,
                     compact: true  // Exclude Base64 images, use YouTube thumbnails
                 });
 
