@@ -28,8 +28,8 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
 
     // Get thumbnail URL - for podcast cards (promotional images ONLY, not guest photos)
     const getThumbnailUrl = () => {
-        // Priority: thumbnailImage > YouTube thumbnail > logo
-        // NOTE: guestImage is NEVER used as card thumbnail - guest photos are for the info section only
+        // Priority: thumbnailImage > YouTube thumbnail > guestImage (as last resort) > logo
+        // NOTE: guestImage is used as fallback ONLY when thumbnailImage is invalid
 
         const thumbnailUrl = getImageUrl(podcast.thumbnailImage);
         if (thumbnailUrl) {
@@ -44,7 +44,15 @@ export default function PodcastCard({ podcast, variant = 'grid' }: PodcastCardPr
             return ytThumb;
         }
 
-        // Return logo as final fallback (NOT guest image - that's for guest section)
+        // FALLBACK: Use guestImage if thumbnailImage is missing/invalid
+        // This handles cases where database has invalid file paths
+        const guestImageUrl = getImageUrl(podcast.guestImage);
+        if (guestImageUrl) {
+            console.log(`[PodcastCard] Using guestImage as fallback for "${podcast.title}":`, guestImageUrl);
+            return guestImageUrl;
+        }
+
+        // Return logo as final fallback
         console.log(`[PodcastCard] Using logo fallback for "${podcast.title}"`);
         return logoImage;
     };
