@@ -62,10 +62,9 @@ export default function AdminDashboard() {
         return match ? match[0] : input;
     };
 
-    // Settings State - Initialize with sanitization
-    const [renderApiKey, setRenderApiKey] = useState(localStorage.getItem('renderApiKey') || '');
-    const [frontendServiceId, setFrontendServiceId] = useState(extractServiceId(localStorage.getItem('frontendServiceId') || ''));
-    const [backendServiceId, setBackendServiceId] = useState(extractServiceId(localStorage.getItem('backendServiceId') || ''));
+    // Settings State
+    const [frontendServiceId, setFrontendServiceId] = useState('');
+    const [backendServiceId, setBackendServiceId] = useState('');
     const [frontendDeployments, setFrontendDeployments] = useState<any[]>([]);
     const [backendDeployments, setBackendDeployments] = useState<any[]>([]);
     const [renderLoading, setRenderLoading] = useState(false);
@@ -97,26 +96,30 @@ export default function AdminDashboard() {
         }
     }, [location]);
 
-    // Sanitize state on mount/tab change in case of bad local storage
+    // Fetch Render Config and Deployments on load
     useEffect(() => {
         if (activeTab === 'settings') {
             checkSystemHealth();
-
-            // Auto-clean inputs if they are full URLs
-            const cleanFe = extractServiceId(frontendServiceId);
-            const cleanBe = extractServiceId(backendServiceId);
-            if (cleanFe !== frontendServiceId) setFrontendServiceId(cleanFe);
-            if (cleanBe !== backendServiceId) setBackendServiceId(cleanBe);
-
-            if (renderApiKey && (cleanFe || cleanBe)) {
-                // Use sanitized values for fetch
-                fetchRenderDeployments(cleanFe, cleanBe);
-            }
-
-            // Fetch episode loading settings
+            fetchRenderConfig();
             fetchEpisodeSettings();
         }
-    }, [activeTab, frontendServiceId, backendServiceId]);
+    }, [activeTab]);
+
+    const fetchRenderConfig = async () => {
+        try {
+            const response = await renderAPI.getConfig();
+            const { frontendServiceId: feId, backendServiceId: beId } = response.data;
+
+            setFrontendServiceId(feId);
+            setBackendServiceId(beId);
+
+            if (feId || beId) {
+                fetchRenderDeployments(feId, beId);
+            }
+        } catch (error) {
+            console.error('Error fetching Render config:', error);
+        }
+    };
 
     const saveSettings = () => {
         const cleanFe = extractServiceId(frontendServiceId);
@@ -126,7 +129,7 @@ export default function AdminDashboard() {
         setFrontendServiceId(cleanFe);
         setBackendServiceId(cleanBe);
 
-        localStorage.setItem('renderApiKey', renderApiKey);
+        // Note: API Key is now managed via backend env vars, not local storage
         localStorage.setItem('frontendServiceId', cleanFe);
         localStorage.setItem('backendServiceId', cleanBe);
 
@@ -150,8 +153,6 @@ export default function AdminDashboard() {
     };
 
     const fetchRenderDeployments = async (feId = frontendServiceId, beId = backendServiceId) => {
-        if (!renderApiKey) return;
-
         // Ensure we are using clean IDs even if passed args are dirty (though we try to pass clean ones)
         const cleanFe = extractServiceId(feId);
         const cleanBe = extractServiceId(beId);
@@ -160,7 +161,7 @@ export default function AdminDashboard() {
         try {
             if (cleanFe) {
                 try {
-                    const feRes = await renderAPI.getDeployments(cleanFe, renderApiKey);
+                    const feRes = await renderAPI.getDeployments(cleanFe);
                     setFrontendDeployments(feRes.data);
                 } catch (e) {
                     console.error("Error fetching frontend deployments", e);
@@ -169,7 +170,7 @@ export default function AdminDashboard() {
 
             if (cleanBe) {
                 try {
-                    const beRes = await renderAPI.getDeployments(cleanBe, renderApiKey);
+                    const beRes = await renderAPI.getDeployments(cleanBe);
                     setBackendDeployments(beRes.data);
                 } catch (e) {
                     console.error("Error fetching backend deployments", e);
@@ -1380,67 +1381,7 @@ export default function AdminDashboard() {
                             </div>
                         </motion.div>
 
-                        {/* Render Configuration */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="bg-white rounded-xl shadow-sm p-6"
-                        >
-                            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                <Settings className="w-6 h-6 text-maroon-700" />
-                                Render Configuration
-                            </h2>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Render API Key</label>
-                                    <input
-                                        type="password"
-                                        value={renderApiKey}
-                                        onChange={(e) => setRenderApiKey(e.target.value)}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
-                                        placeholder="rnd_..."
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Frontend Service ID</label>
-                                        <input
-                                            type="text"
-                                            value={frontendServiceId}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                const match = val.match(/(srv-[a-z0-9]+)/i);
-                                                setFrontendServiceId(match ? match[0] : val);
-                                            }}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
-                                            placeholder="srv-..."
-                                        />
-                                        <p className="text-gray-500 text-xs mt-1">
-                                            Paste the full URL or Service ID.
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Backend Service ID</label>
-                                        <input
-                                            type="text"
-                                            value={backendServiceId}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                const match = val.match(/(srv-[a-z0-9]+)/i);
-                                                setBackendServiceId(match ? match[0] : val);
-                                            }}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
-                                            placeholder="srv-..."
-                                        />
-                                        <p className="text-gray-500 text-xs mt-1">
-                                            Paste the full URL or Service ID.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
 
                         {/* Episode Loading Configuration */}
                         <motion.div
@@ -1567,16 +1508,14 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Recent Deployments */}
-                        {renderApiKey && (
-                            <div className="space-y-6">
-                                {frontendServiceId && (
-                                    <DeploymentsTable deployments={frontendDeployments} title="Frontend" />
-                                )}
-                                {backendServiceId && (
-                                    <DeploymentsTable deployments={backendDeployments} title="Backend" />
-                                )}
-                            </div>
-                        )}
+                        <div className="space-y-6">
+                            {frontendServiceId && (
+                                <DeploymentsTable deployments={frontendDeployments} title="Frontend" />
+                            )}
+                            {backendServiceId && (
+                                <DeploymentsTable deployments={backendDeployments} title="Backend" />
+                            )}
+                        </div>
                     </div>
                 )}
             </main>

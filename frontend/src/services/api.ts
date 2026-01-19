@@ -270,8 +270,9 @@ export const aboutUsAPI = {
 
 // Render API
 export const renderAPI = {
-    getDeployments: (serviceId: string, apiKey: string) =>
-        api.post('/render/deployments', { serviceId, apiKey }),
+    getConfig: () => api.get<{ frontendServiceId: string; backendServiceId: string }>('/render/config'),
+    getDeployments: (serviceId: string) =>
+        api.post('/render/deployments', { serviceId }),
 };
 
 // System Health API
