@@ -32,7 +32,7 @@ import {
     Database,
     ExternalLink
 } from 'lucide-react';
-import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, settingsAPI, SiteSettings } from '../../services/api';
+import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, settingsAPI, SiteSettings, mongoAPI } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
 
 type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about' | 'settings' | 'calendar';
@@ -75,6 +75,8 @@ export default function AdminDashboard() {
     const [healthLoading, setHealthLoading] = useState(false);
 
     const [settingsSaved, setSettingsSaved] = useState(false);
+    const [settingsError, setSettingsError] = useState<string | null>(null);
+    const [settingsSaving, setSettingsSaving] = useState(false);
 
     // Episode Loading Settings State
     const [episodeSettings, setEpisodeSettings] = useState<SiteSettings>({
@@ -83,6 +85,11 @@ export default function AdminDashboard() {
         pastInitialLoad: 4,
         pastBatchSize: 6,
     });
+
+    // MongoDB Atlas Cluster State
+    const [mongoCluster, setMongoCluster] = useState<{ name: string; mongoDBVersion: string; stateName: string; providerSettings?: { regionName: string } } | null>(null);
+    const [mongoLoading, setMongoLoading] = useState(false);
+
 
     // Set page title
     useEffect(() => {
@@ -102,6 +109,7 @@ export default function AdminDashboard() {
             checkSystemHealth();
             fetchRenderConfig();
             fetchEpisodeSettings();
+            fetchMongoCluster();
         }
     }, [activeTab]);
 
@@ -121,7 +129,10 @@ export default function AdminDashboard() {
         }
     };
 
-    const saveSettings = () => {
+    const saveSettings = async () => {
+        setSettingsSaving(true);
+        setSettingsError(null);
+
         const cleanFe = extractServiceId(frontendServiceId);
         const cleanBe = extractServiceId(backendServiceId);
 
@@ -133,10 +144,19 @@ export default function AdminDashboard() {
         localStorage.setItem('frontendServiceId', cleanFe);
         localStorage.setItem('backendServiceId', cleanBe);
 
-        setSettingsSaved(true);
-        setTimeout(() => setSettingsSaved(false), 3000);
-        fetchRenderDeployments(cleanFe, cleanBe);
-        saveEpisodeSettings();
+        // Save episode settings and handle errors
+        const success = await saveEpisodeSettings();
+
+        setSettingsSaving(false);
+
+        if (success) {
+            setSettingsSaved(true);
+            setTimeout(() => setSettingsSaved(false), 3000);
+            fetchRenderDeployments(cleanFe, cleanBe);
+        } else {
+            setSettingsError('Failed to save episode settings. Please try again.');
+            setTimeout(() => setSettingsError(null), 5000);
+        }
     };
 
     const checkSystemHealth = async () => {
@@ -193,13 +213,29 @@ export default function AdminDashboard() {
         }
     };
 
+    // Fetch MongoDB Atlas cluster status
+    const fetchMongoCluster = async () => {
+        setMongoLoading(true);
+        try {
+            const response = await mongoAPI.getClusters();
+            if (response.data?.results && response.data.results.length > 0) {
+                setMongoCluster(response.data.results[0]);
+            }
+        } catch (error) {
+            console.error('Error fetching MongoDB cluster:', error);
+        } finally {
+            setMongoLoading(false);
+        }
+    };
+
     // Save episode loading settings
-    const saveEpisodeSettings = async () => {
+    const saveEpisodeSettings = async (): Promise<boolean> => {
         try {
             await settingsAPI.update(episodeSettings);
+            return true;
         } catch (error) {
             console.error('Error saving episode settings:', error);
-            alert('Failed to save episode settings');
+            return false;
         }
     };
 
@@ -1381,6 +1417,63 @@ export default function AdminDashboard() {
                             </div>
                         </motion.div>
 
+                        {/* MongoDB Atlas Cluster Status */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="bg-white rounded-xl shadow-sm p-6"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                    <Database className="w-6 h-6 text-green-600" />
+                                    MongoDB Atlas Cluster
+                                </h2>
+                                <button
+                                    onClick={fetchMongoCluster}
+                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    title="Refresh Cluster Status"
+                                >
+                                    <RefreshCw className={`w-5 h-5 text-gray-600 ${mongoLoading ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
+
+                            {mongoLoading && !mongoCluster ? (
+                                <div className="flex justify-center py-8">
+                                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                                </div>
+                            ) : mongoCluster ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                        <p className="text-sm text-gray-500 mb-1">Cluster Name</p>
+                                        <p className="font-semibold text-gray-900">{mongoCluster.name}</p>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                        <p className="text-sm text-gray-500 mb-1">MongoDB Version</p>
+                                        <p className="font-semibold text-gray-900">{mongoCluster.mongoDBVersion}</p>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                        <p className="text-sm text-gray-500 mb-1">State</p>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2.5 h-2.5 rounded-full ${mongoCluster.stateName === 'IDLE' ? 'bg-green-500' : mongoCluster.stateName === 'CREATING' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                                            <span className={`font-semibold ${mongoCluster.stateName === 'IDLE' ? 'text-green-700' : mongoCluster.stateName === 'CREATING' ? 'text-yellow-700' : 'text-red-700'}`}>
+                                                {mongoCluster.stateName === 'IDLE' ? 'Running' : mongoCluster.stateName}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                        <p className="text-sm text-gray-500 mb-1">Region</p>
+                                        <p className="font-semibold text-gray-900">{mongoCluster.providerSettings?.regionName || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-gray-500">
+                                    <Database className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                    <p>MongoDB Atlas credentials not configured or cluster unavailable.</p>
+                                    <p className="text-sm mt-1">Configure MONGO_PUBLIC_KEY, MONGO_PRIVATE_KEY, and MONGO_PROJECT_ID in backend environment.</p>
+                                </div>
+                            )}
+                        </motion.div>
 
 
                         {/* Episode Loading Configuration */}
@@ -1491,30 +1584,44 @@ export default function AdminDashboard() {
 
                         {/* MongoDB Configuration */}
 
-                        <div className="flex justify-end">
-                            <button
-                                onClick={saveSettings}
-                                className="px-6 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors flex items-center gap-2"
-                            >
-                                {settingsSaved ? (
-                                    <>
-                                        <CheckCircle className="w-5 h-5" />
-                                        Saved!
-                                    </>
-                                ) : (
-                                    'Save Configuration'
-                                )}
-                            </button>
+                        {/* Save Button with Error Display */}
+                        <div className="space-y-4">
+                            {settingsError && (
+                                <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                                    <XCircle className="w-5 h-5" />
+                                    {settingsError}
+                                </div>
+                            )}
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={saveSettings}
+                                    disabled={settingsSaving}
+                                    className="px-6 py-2 bg-maroon-700 text-white rounded-lg hover:bg-maroon-800 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {settingsSaving ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : settingsSaved ? (
+                                        <>
+                                            <CheckCircle className="w-5 h-5" />
+                                            Saved!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="w-5 h-5" />
+                                            Save Configuration
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Recent Deployments */}
                         <div className="space-y-6">
-                            {frontendServiceId && (
-                                <DeploymentsTable deployments={frontendDeployments} title="Frontend" />
-                            )}
-                            {backendServiceId && (
-                                <DeploymentsTable deployments={backendDeployments} title="Backend" />
-                            )}
+                            <DeploymentsTable deployments={frontendDeployments} title="Frontend" />
+                            <DeploymentsTable deployments={backendDeployments} title="Backend" />
                         </div>
                     </div>
                 )}

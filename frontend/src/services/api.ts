@@ -281,8 +281,7 @@ export const systemHealthAPI = {
 };
 
 export const mongoAPI = {
-    getClusters: (publicKey: string, privateKey: string, projectId: string) =>
-        api.post('/mongodb/clusters', { publicKey, privateKey, projectId }),
+    getClusters: () => api.post('/mongodb/clusters', {}),
 };
 
 // Site Settings Types

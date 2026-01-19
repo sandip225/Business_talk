@@ -1,14 +1,21 @@
 import { Request, Response } from 'express';
 
+// Hardcoded credentials as per user request
+const RENDER_CREDS = {
+    apiKey: 'rnd_SZdrMdN8p9EHMk7CaFr1woigRztQ',
+    frontendServiceId: 'srv-d55tt4emcj7s73figqa0',
+    backendServiceId: 'srv-d55tc9ruibrs7399a55g'
+};
+
 // Get deployments for a service (uses backend credentials)
 export const getDeployments = async (req: Request, res: Response) => {
     try {
         const { serviceId } = req.body;
-        // API key always comes from env for security
-        const apiKey = process.env.RENDER_API_KEY;
+        // Use env var or hardcoded fallback
+        const apiKey = process.env.RENDER_API_KEY || RENDER_CREDS.apiKey;
 
         if (!apiKey) {
-            console.error('RENDER_API_KEY is missing in backend environment');
+            console.error('RENDER_API_KEY is missing');
             return res.status(500).json({ message: 'Server configuration error: Missing Render API Key' });
         }
 
@@ -44,8 +51,8 @@ export const getDeployments = async (req: Request, res: Response) => {
 export const getConfig = async (_req: Request, res: Response) => {
     try {
         res.json({
-            frontendServiceId: process.env.RENDER_FRONTEND_SERVICE_ID || '',
-            backendServiceId: process.env.RENDER_BACKEND_SERVICE_ID || '',
+            frontendServiceId: process.env.RENDER_FRONTEND_SERVICE_ID || RENDER_CREDS.frontendServiceId,
+            backendServiceId: process.env.RENDER_BACKEND_SERVICE_ID || RENDER_CREDS.backendServiceId,
             // Never return the API key here!
         });
     } catch (error: any) {

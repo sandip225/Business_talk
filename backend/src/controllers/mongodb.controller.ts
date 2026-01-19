@@ -3,10 +3,13 @@ import { request } from 'urllib';
 
 export const getClusters = async (req: Request, res: Response) => {
     try {
-        const { publicKey, privateKey, projectId } = req.body;
+        // Use env vars first, fallback to request body for backward compatibility
+        const publicKey = process.env.MONGO_PUBLIC_KEY || req.body.publicKey;
+        const privateKey = process.env.MONGO_PRIVATE_KEY || req.body.privateKey;
+        const projectId = process.env.MONGO_PROJECT_ID || req.body.projectId;
 
         if (!publicKey || !privateKey || !projectId) {
-            return res.status(400).json({ message: 'Public Key, Private Key, and Project ID are required' });
+            return res.status(400).json({ message: 'MongoDB Atlas credentials are not configured' });
         }
 
         // MongoDB Atlas API Endpoint
