@@ -8,111 +8,119 @@ import { podcastAPI, Podcast, settingsAPI, SiteSettings } from '../services/api'
 import logoImage from '../assets/logo.jpg';
 
 export default function Home() {
-    // Use local state for upcoming podcasts to support pagination/limiting
+    // Upcoming podcasts state - server-side pagination
     const [upcomingPodcasts, setUpcomingPodcasts] = useState<Podcast[]>([]);
     const [upcomingTotal, setUpcomingTotal] = useState(0);
+    const [upcomingPage, setUpcomingPage] = useState(1);
     const [isUpcomingLoading, setIsUpcomingLoading] = useState(true);
-
-    // Use local state for past podcasts (like Podcasts.tsx does)
-    const [pastPodcasts, setPastPodcastsLocal] = useState<Podcast[]>([]);
-    const [isPastLoading, setIsPastLoading] = useState(false);
-
-    // Combined loading state
-    const isLoading = isUpcomingLoading || isPastLoading;
-
-    const [error, setError] = useState<string | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
-
-    // Pagination for upcoming podcasts
-    const [displayedUpcomingCount, setDisplayedUpcomingCount] = useState(4);
     const [isLoadingMoreUpcoming, setIsLoadingMoreUpcoming] = useState(false);
     const upcomingObserverRef = useRef<IntersectionObserver | null>(null);
     const upcomingLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    // Pagination for past podcasts only
-    const [displayedPastCount, setDisplayedPastCount] = useState(4);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    // Past podcasts state - server-side pagination
+    const [pastPodcasts, setPastPodcasts] = useState<Podcast[]>([]);
+    const [pastTotal, setPastTotal] = useState(0);
+    const [pastPage, setPastPage] = useState(1);
+    const [isPastLoading, setIsPastLoading] = useState(true);
+    const [isLoadingMorePast, setIsLoadingMorePast] = useState(false);
+    const pastObserverRef = useRef<IntersectionObserver | null>(null);
+    const pastLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    // Combined loading state for initial load
+    const isLoading = isUpcomingLoading || isPastLoading;
+
+    const [error, setError] = useState<string | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
 
     // Dynamic settings from API
     const [settings, setSettings] = useState<SiteSettings>({
         upcomingInitialLoad: 4,
         upcomingBatchSize: 4,
         pastInitialLoad: 4,
-        pastBatchSize: 6,
+        pastBatchSize: 4,
     });
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
 
     // Set page title
     useEffect(() => {
         document.title = "Business Talk | The World's Premier Research-Focused Podcast Series";
     }, []);
 
-    // Fetch settings on mount
+    // Fetch settings FIRST, then fetch podcasts
     useEffect(() => {
         const fetchSettings = async () => {
             try {
                 const response = await settingsAPI.get();
                 setSettings(response.data);
-                // Update initial counts based on settings
-                setDisplayedUpcomingCount(response.data.upcomingInitialLoad);
-                setDisplayedPastCount(response.data.pastInitialLoad);
+                console.log('[Home] Settings loaded:', response.data);
             } catch (error) {
                 console.log('[Home] Using default settings');
+            } finally {
+                setSettingsLoaded(true);
             }
         };
         fetchSettings();
     }, []);
 
-    const handleRetry = () => {
-        setError(null);
-        setRetryCount(prev => prev + 1);
-        setDisplayedPastCount(settings.pastInitialLoad);
-    };
-
-    // Fetch upcoming podcasts - show all upcoming episodes
+    // Fetch INITIAL upcoming podcasts (only after settings loaded)
     useEffect(() => {
+        if (!settingsLoaded) return;
+
         const fetchUpcoming = async () => {
             setIsUpcomingLoading(true);
+            console.log(`[Home] Fetching upcoming podcasts - page 1, limit ${settings.upcomingInitialLoad}`);
             try {
-                // Fetch upcoming podcasts WITHOUT compact mode
-                // Upcoming podcasts have uploaded thumbnails but NO YouTube URLs yet
-                // Need full thumbnailImage field to display promotional images
                 const response = await podcastAPI.getAll({
-                    category: 'upcoming'
-                    // NO compact mode - include thumbnailImage for promotional images
+                    category: 'upcoming',
+                    limit: settings.upcomingInitialLoad,
+                    page: 1
                 });
                 setUpcomingPodcasts(response.data.podcasts || []);
                 setUpcomingTotal(response.data.pagination?.total || 0);
+                setUpcomingPage(1);
+                console.log(`[Home] Got ${response.data.podcasts?.length}/${response.data.pagination?.total} upcoming podcasts`);
             } catch (err) {
                 console.error('[Home] Error fetching upcoming podcasts:', err);
-                // Don't set main error here to allow rest of page to load
             } finally {
                 setIsUpcomingLoading(false);
             }
         };
 
         fetchUpcoming();
-    }, [retryCount]);
+    }, [settingsLoaded, retryCount, settings.upcomingInitialLoad]);
 
-    // Load more upcoming podcasts (for infinite scroll)
-    const loadMoreUpcoming = useCallback(() => {
-        if (isLoadingMoreUpcoming || displayedUpcomingCount >= upcomingPodcasts.length) return;
+    // Load MORE upcoming podcasts on scroll
+    const loadMoreUpcoming = useCallback(async () => {
+        if (isLoadingMoreUpcoming || upcomingPodcasts.length >= upcomingTotal) return;
 
         setIsLoadingMoreUpcoming(true);
-        setTimeout(() => {
-            setDisplayedUpcomingCount(prev => Math.min(prev + settings.upcomingBatchSize, upcomingPodcasts.length));
-            setIsLoadingMoreUpcoming(false);
-        }, 300);
-    }, [displayedUpcomingCount, upcomingPodcasts.length, isLoadingMoreUpcoming, settings.upcomingBatchSize]);
+        const nextPage = upcomingPage + 1;
+        console.log(`[Home] Loading more upcoming - page ${nextPage}, limit ${settings.upcomingBatchSize}`);
 
-    // Setup intersection observer for upcoming podcasts infinite scroll
+        try {
+            const response = await podcastAPI.getAll({
+                category: 'upcoming',
+                limit: settings.upcomingBatchSize,
+                page: nextPage
+            });
+            const newPodcasts = response.data.podcasts || [];
+            setUpcomingPodcasts(prev => [...prev, ...newPodcasts]);
+            setUpcomingPage(nextPage);
+            console.log(`[Home] Added ${newPodcasts.length} more upcoming podcasts`);
+        } catch (err) {
+            console.error('[Home] Error loading more upcoming:', err);
+        } finally {
+            setIsLoadingMoreUpcoming(false);
+        }
+    }, [upcomingPodcasts.length, upcomingTotal, upcomingPage, isLoadingMoreUpcoming, settings.upcomingBatchSize]);
+
+    // Intersection observer for upcoming scroll
     useEffect(() => {
         if (upcomingObserverRef.current) upcomingObserverRef.current.disconnect();
 
         upcomingObserverRef.current = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting && !isUpcomingLoading && !isLoadingMoreUpcoming) {
+                if (entries[0].isIntersecting && !isUpcomingLoading && !isLoadingMoreUpcoming && upcomingPodcasts.length < upcomingTotal) {
                     loadMoreUpcoming();
                 }
             },
@@ -126,32 +134,28 @@ export default function Home() {
         return () => {
             if (upcomingObserverRef.current) upcomingObserverRef.current.disconnect();
         };
-    }, [loadMoreUpcoming, isUpcomingLoading, isLoadingMoreUpcoming]);
+    }, [loadMoreUpcoming, isUpcomingLoading, isLoadingMoreUpcoming, upcomingPodcasts.length, upcomingTotal]);
 
-    // Fetch past podcasts DIRECTLY (like Podcasts.tsx)
+    // Fetch INITIAL past podcasts (only after settings loaded)
     useEffect(() => {
+        if (!settingsLoaded) return;
+
         const fetchPast = async () => {
             setIsPastLoading(true);
             setError(null);
-
-            console.log('[Home] Fetching PAST podcasts directly from API...');
+            console.log(`[Home] Fetching past podcasts - page 1, limit ${settings.pastInitialLoad}`);
 
             try {
-                // Fetch ALL past podcasts with compact mode
-                // Compact mode excludes Base64 images, uses YouTube thumbnails
                 const response = await podcastAPI.getAll({
                     category: 'past',
-                    compact: true  // Exclude Base64 images, use YouTube thumbnails
+                    limit: settings.pastInitialLoad,
+                    page: 1,
+                    compact: true
                 });
-
-                const podcasts = response.data.podcasts || [];
-                console.log('[Home] Received past podcasts:', podcasts.length);
-
-                setPastPodcastsLocal(podcasts);
-                setError(null);
-
-                // Don't reset displayedPastCount here - settings effect handles initial count
-                // setDisplayedPastCount(settings.pastInitialLoad);
+                setPastPodcasts(response.data.podcasts || []);
+                setPastTotal(response.data.pagination?.total || 0);
+                setPastPage(1);
+                console.log(`[Home] Got ${response.data.podcasts?.length}/${response.data.pagination?.total} past podcasts`);
             } catch (err) {
                 console.error('[Home] Error fetching past podcasts:', err);
                 setError('Failed to load podcasts. Please try again later.');
@@ -161,44 +165,60 @@ export default function Home() {
         };
 
         fetchPast();
-    }, [retryCount]);
+    }, [settingsLoaded, retryCount, settings.pastInitialLoad]);
 
-    // Infinite scroll for past podcasts
-    const loadMorePodcasts = useCallback(() => {
-        if (isLoadingMore || displayedPastCount >= pastPodcasts.length) return;
+    // Load MORE past podcasts on scroll
+    const loadMorePast = useCallback(async () => {
+        if (isLoadingMorePast || pastPodcasts.length >= pastTotal) return;
 
-        setIsLoadingMore(true);
-        setTimeout(() => {
-            setDisplayedPastCount(prev => Math.min(prev + settings.pastBatchSize, pastPodcasts.length));
-            setIsLoadingMore(false);
-        }, 300);
-    }, [displayedPastCount, pastPodcasts.length, isLoadingMore, settings.pastBatchSize]);
+        setIsLoadingMorePast(true);
+        const nextPage = pastPage + 1;
+        console.log(`[Home] Loading more past - page ${nextPage}, limit ${settings.pastBatchSize}`);
 
-    // Setup intersection observer for infinite scroll
+        try {
+            const response = await podcastAPI.getAll({
+                category: 'past',
+                limit: settings.pastBatchSize,
+                page: nextPage,
+                compact: true
+            });
+            const newPodcasts = response.data.podcasts || [];
+            setPastPodcasts(prev => [...prev, ...newPodcasts]);
+            setPastPage(nextPage);
+            console.log(`[Home] Added ${newPodcasts.length} more past podcasts`);
+        } catch (err) {
+            console.error('[Home] Error loading more past:', err);
+        } finally {
+            setIsLoadingMorePast(false);
+        }
+    }, [pastPodcasts.length, pastTotal, pastPage, isLoadingMorePast, settings.pastBatchSize]);
+
+    // Intersection observer for past scroll
     useEffect(() => {
-        if (observerRef.current) observerRef.current.disconnect();
+        if (pastObserverRef.current) pastObserverRef.current.disconnect();
 
-        observerRef.current = new IntersectionObserver(
+        pastObserverRef.current = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting && !isLoading && !isLoadingMore) {
-                    loadMorePodcasts();
+                if (entries[0].isIntersecting && !isPastLoading && !isLoadingMorePast && pastPodcasts.length < pastTotal) {
+                    loadMorePast();
                 }
             },
             { threshold: 0.1 }
         );
 
-        if (loadMoreRef.current) {
-            observerRef.current.observe(loadMoreRef.current);
+        if (pastLoadMoreRef.current) {
+            pastObserverRef.current.observe(pastLoadMoreRef.current);
         }
 
         return () => {
-            if (observerRef.current) observerRef.current.disconnect();
+            if (pastObserverRef.current) pastObserverRef.current.disconnect();
         };
-    }, [loadMorePodcasts, isLoading, isLoadingMore]);
+    }, [loadMorePast, isPastLoading, isLoadingMorePast, pastPodcasts.length, pastTotal]);
 
-    // Display paginated upcoming and past podcasts
-    const displayedUpcoming = upcomingPodcasts.slice(0, displayedUpcomingCount);
-    const displayedPast = pastPodcasts.slice(0, displayedPastCount);
+    const handleRetry = () => {
+        setError(null);
+        setRetryCount(prev => prev + 1);
+    };
 
     return (
         <div className="min-h-screen bg-white">
@@ -255,7 +275,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Upcoming Podcasts Section - High-res images only */}
+            {/* Upcoming Podcasts Section */}
             <section className="py-8 sm:py-12 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div
@@ -273,21 +293,11 @@ export default function Home() {
                             </span>
                         </div>
 
-                        {isLoading ? (
+                        {isUpcomingLoading ? (
                             <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                                {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="bg-gray-100 rounded-2xl h-80 animate-pulse"></div>
                                 ))}
-                            </div>
-                        ) : error ? (
-                            <div className="text-center py-12">
-                                <p className="text-red-600 mb-4">{error}</p>
-                                <button
-                                    onClick={handleRetry}
-                                    className="px-6 py-3 bg-maroon-700 text-white font-semibold rounded-lg hover:bg-maroon-800 transition-colors"
-                                >
-                                    Retry
-                                </button>
                             </div>
                         ) : upcomingPodcasts.length === 0 ? (
                             <div className="text-center py-12">
@@ -295,19 +305,15 @@ export default function Home() {
                             </div>
                         ) : (
                             <>
-                                {/* Display 2 cards per row */}
                                 <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                                    {displayedUpcoming.map((podcast: Podcast) => (
+                                    {upcomingPodcasts.map((podcast: Podcast) => (
                                         <PodcastCard key={podcast._id} podcast={podcast} variant="thumbnail-only" />
                                     ))}
                                 </div>
 
-                                {/* Infinite scroll sentinel for upcoming podcasts */}
-                                {displayedUpcomingCount < upcomingPodcasts.length && (
-                                    <div
-                                        ref={upcomingLoadMoreRef}
-                                        className="flex justify-center py-8"
-                                    >
+                                {/* Infinite scroll sentinel for upcoming */}
+                                {upcomingPodcasts.length < upcomingTotal && (
+                                    <div ref={upcomingLoadMoreRef} className="flex justify-center py-8">
                                         {isLoadingMoreUpcoming && (
                                             <div className="flex items-center gap-2 text-maroon-700">
                                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-maroon-700"></div>
@@ -322,7 +328,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Previous Podcasts Section - Different background with shadow */}
+            {/* Previous Podcasts Section */}
             <section className="py-16 bg-gray-100 shadow-inner">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div
@@ -335,7 +341,7 @@ export default function Home() {
                             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
                                 Previous Episodes
                             </h2>
-                            {pastPodcasts.length > 0 && (
+                            {pastTotal > 0 && (
                                 <Link
                                     to="/podcasts"
                                     className="flex items-center space-x-2 text-maroon-700 hover:text-maroon-800 font-semibold transition-colors group whitespace-nowrap text-sm sm:text-base"
@@ -346,10 +352,10 @@ export default function Home() {
                             )}
                         </div>
 
-                        {isLoading ? (
+                        {isPastLoading ? (
                             <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="bg-gray-100 rounded-lg h-96 animate-pulse"></div>
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="bg-gray-200 rounded-lg h-96 animate-pulse"></div>
                                 ))}
                             </div>
                         ) : error ? (
@@ -362,22 +368,22 @@ export default function Home() {
                                     Retry
                                 </button>
                             </div>
-                        ) : displayedPast.length === 0 ? (
+                        ) : pastPodcasts.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-gray-500">No previous podcasts available yet.</p>
                             </div>
                         ) : (
                             <>
                                 <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                                    {displayedPast.map((podcast: Podcast) => (
+                                    {pastPodcasts.map((podcast: Podcast) => (
                                         <PodcastCard key={podcast._id} podcast={podcast} variant="grid" />
                                     ))}
                                 </div>
 
-                                {/* Infinite scroll trigger */}
-                                {displayedPastCount < pastPodcasts.length && (
-                                    <div ref={loadMoreRef} className="flex justify-center mt-8">
-                                        {isLoadingMore && (
+                                {/* Infinite scroll sentinel for past */}
+                                {pastPodcasts.length < pastTotal && (
+                                    <div ref={pastLoadMoreRef} className="flex justify-center mt-8">
+                                        {isLoadingMorePast && (
                                             <div className="flex items-center gap-2 text-maroon-700">
                                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-maroon-700"></div>
                                                 <span>Loading more podcasts...</span>
@@ -391,7 +397,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Stay Updated Section */}
             {/* Stay Updated Section */}
             <StayUpdated />
         </div>
