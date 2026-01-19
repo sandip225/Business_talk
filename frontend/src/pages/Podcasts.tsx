@@ -29,15 +29,14 @@ export default function Podcasts() {
         setError(null);
         setPage(1);
         try {
-            // PERFORMANCE: Use compact mode to exclude large Base64 images
-            // YouTube thumbnails will be used as fallback (handled by PodcastCard)
+            // thumbnailImage is included to show uploaded promotional images
             const limit = 2; // User requested: 2 at once
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit,
                 page: 1,
                 search: query,
-                compact: true  // Exclude Base64 thumbnailImage for faster loading
+                // Note: thumbnailImage is included to show uploaded promotional images
             });
 
             const newPodcasts = response.data.podcasts || [];
@@ -53,7 +52,7 @@ export default function Podcasts() {
         }
     }, []);
 
-    // Load More fetch - ONLY PAST episodes with compact mode for faster loading
+    // Load More fetch - ONLY PAST episodes
     const loadMoreItems = useCallback(async () => {
         if (isLoadingMore || !hasMore) return;
 
@@ -68,7 +67,7 @@ export default function Podcasts() {
                 limit,
                 page: nextPage,
                 search: searchTerm,
-                compact: true  // Exclude Base64 thumbnailImage for faster loading
+                // Note: thumbnailImage is included to show uploaded promotional images
             });
 
             const newPodcasts = response.data.podcasts || [];

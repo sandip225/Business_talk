@@ -149,8 +149,8 @@ export default function Home() {
                 const response = await podcastAPI.getAll({
                     category: 'past',
                     limit: settings.pastInitialLoad,
-                    page: 1,
-                    compact: true
+                    page: 1
+                    // Note: thumbnailImage is included to show uploaded promotional images
                 });
                 setPastPodcasts(response.data.podcasts || []);
                 setPastTotal(response.data.pagination?.total || 0);
@@ -179,8 +179,8 @@ export default function Home() {
             const response = await podcastAPI.getAll({
                 category: 'past',
                 limit: settings.pastBatchSize,
-                page: nextPage,
-                compact: true
+                page: nextPage
+                // Note: thumbnailImage is included to show uploaded promotional images
             });
             const newPodcasts = response.data.podcasts || [];
             setPastPodcasts(prev => [...prev, ...newPodcasts]);
