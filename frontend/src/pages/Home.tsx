@@ -26,8 +26,7 @@ export default function Home() {
     const pastObserverRef = useRef<IntersectionObserver | null>(null);
     const pastLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    // Combined loading state for initial load
-    const isLoading = isUpcomingLoading || isPastLoading;
+
 
     const [error, setError] = useState<string | null>(null);
     const [retryCount, setRetryCount] = useState(0);
