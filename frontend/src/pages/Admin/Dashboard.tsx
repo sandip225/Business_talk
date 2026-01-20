@@ -1518,7 +1518,20 @@ export default function AdminDashboard() {
                                     {mongoError ? (
                                         <>
                                             <p className="text-red-600 font-medium">Error: {mongoError}</p>
-                                            <p className="text-sm mt-2">Check browser console and backend logs for more details.</p>
+                                            {mongoError.includes('401') && (
+                                                <div className="mt-4 text-left bg-red-50 p-4 rounded text-sm text-gray-700">
+                                                    <p className="font-bold mb-2">How to fix 401 Unauthorized:</p>
+                                                    <ul className="list-disc pl-5 space-y-1">
+                                                        <li>Go to <a href="https://cloud.mongodb.com" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">MongoDB Atlas Dashboard</a></li>
+                                                        <li>Click <strong>Access Manager</strong> {'>'} <strong>Project Access</strong></li>
+                                                        <li>Find your API Key <strong>({(mongoCluster as any)?.publicKey || '...'})</strong></li>
+                                                        <li>Click <strong>Edit</strong> {'>'} <strong>Access List</strong></li>
+                                                        <li>Add Entry: <code>0.0.0.0/0</code> (Allow from anywhere)</li>
+                                                        <li>Save changes and wait 1 minute</li>
+                                                    </ul>
+                                                    <p className="mt-2 text-xs text-gray-500">Note: This is required because Render servers use dynamic IPs.</p>
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <>
