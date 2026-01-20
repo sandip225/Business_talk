@@ -7,6 +7,7 @@ export interface ISiteSettings extends Document {
     upcomingBatchSize: number;
     pastInitialLoad: number;
     pastBatchSize: number;
+    googleAnalyticsId?: string;
     // Timestamps
     updatedAt: Date;
 }
@@ -42,6 +43,10 @@ const siteSettingsSchema = new Schema<ISiteSettings>(
             default: 6,
             min: 1,
             max: 50,
+        },
+        googleAnalyticsId: {
+            type: String,
+            default: '',
         },
     },
     {

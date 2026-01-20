@@ -3,6 +3,8 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ScrollToTop from './components/ScrollToTop';
 
+import GoogleAnalytics from './components/GoogleAnalytics';
+
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
 const Blog = lazy(() => import('./pages/Blog'));
@@ -32,6 +34,7 @@ function App() {
     return (
         <HashRouter>
             <ScrollToTop />
+            <GoogleAnalytics />
             <Suspense fallback={<Loading />}>
                 <Routes>
                     <Route path="/" element={<Layout />}>

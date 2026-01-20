@@ -290,6 +290,7 @@ export interface SiteSettings {
     upcomingBatchSize: number;
     pastInitialLoad: number;
     pastBatchSize: number;
+    googleAnalyticsId?: string;
 }
 
 // Settings API

@@ -28,6 +28,7 @@ export const getSettings = async (_req: AuthRequest, res: Response): Promise<voi
             upcomingBatchSize: settings.upcomingBatchSize,
             pastInitialLoad: settings.pastInitialLoad,
             pastBatchSize: settings.pastBatchSize,
+            googleAnalyticsId: settings.googleAnalyticsId,
         });
     } catch (error) {
         console.error('Error fetching settings:', error);
@@ -39,7 +40,7 @@ export const getSettings = async (_req: AuthRequest, res: Response): Promise<voi
 // Update site settings (admin only)
 export const updateSettings = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { upcomingInitialLoad, upcomingBatchSize, pastInitialLoad, pastBatchSize } = req.body;
+        const { upcomingInitialLoad, upcomingBatchSize, pastInitialLoad, pastBatchSize, googleAnalyticsId } = req.body;
 
         // Validate inputs
         const validateNumber = (val: any, name: string): number => {
@@ -50,7 +51,7 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
             return num;
         };
 
-        const updates: Partial<typeof DEFAULT_SETTINGS> = {};
+        const updates: any = {};
 
         if (upcomingInitialLoad !== undefined) {
             updates.upcomingInitialLoad = validateNumber(upcomingInitialLoad, 'Upcoming Initial Load');
@@ -63,6 +64,9 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
         }
         if (pastBatchSize !== undefined) {
             updates.pastBatchSize = validateNumber(pastBatchSize, 'Past Batch Size');
+        }
+        if (googleAnalyticsId !== undefined) {
+            updates.googleAnalyticsId = googleAnalyticsId;
         }
 
         // Update or create settings
@@ -79,6 +83,7 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
                 upcomingBatchSize: settings.upcomingBatchSize,
                 pastInitialLoad: settings.pastInitialLoad,
                 pastBatchSize: settings.pastBatchSize,
+                googleAnalyticsId: settings.googleAnalyticsId,
             },
         });
     } catch (error: any) {

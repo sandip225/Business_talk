@@ -86,6 +86,7 @@ export default function AdminDashboard() {
         upcomingBatchSize: 4,
         pastInitialLoad: 4,
         pastBatchSize: 6,
+        googleAnalyticsId: '',
     });
 
     // MongoDB Atlas Cluster State
@@ -1650,6 +1651,43 @@ export default function AdminDashboard() {
                             </div>
                         </motion.div>
 
+
+
+                        {/* Google Analytics Configuration */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                            className="bg-white rounded-xl shadow-sm p-6"
+                        >
+                            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <Activity className="w-6 h-6 text-orange-600" />
+                                Google Analytics
+                            </h2>
+                            <p className="text-sm text-gray-500 mb-6">
+                                Track website traffic and user behavior.
+                            </p>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Measurement ID (G-XXXXXXXXXX)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={episodeSettings.googleAnalyticsId || ''}
+                                    onChange={(e) => setEpisodeSettings(prev => ({
+                                        ...prev,
+                                        googleAnalyticsId: e.target.value
+                                    }))}
+                                    placeholder="G-XXXXXXXXXX"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono"
+                                />
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Enter your Google Analytics 4 Measurement ID to enable tracking.
+                                </p>
+                            </div>
+                        </motion.div>
+
                         {/* MongoDB Configuration */}
 
                         {/* Save Button with Error Display */}
@@ -1692,8 +1730,9 @@ export default function AdminDashboard() {
                             <DeploymentsTable deployments={backendDeployments} title="Backend" />
                         </div>
                     </div>
-                )}
-            </main>
-        </div>
+                )
+                }
+            </main >
+        </div >
     );
 }
