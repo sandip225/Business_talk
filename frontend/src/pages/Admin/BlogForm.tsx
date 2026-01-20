@@ -240,13 +240,15 @@ export default function BlogForm() {
                             modules={{
                                 toolbar: [
                                     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                                    [{ 'font': [] }],
+                                    [{ 'font': ['serif', 'sans-serif', 'monospace', 'arial', 'times-new-roman', 'georgia', 'verdana', 'courier'] }],
                                     [{ 'size': ['small', false, 'large', 'huge'] }],
                                     ['bold', 'italic', 'underline', 'strike'],
                                     [{ 'color': [] }, { 'background': [] }],
-                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                    [{ 'script': 'sub' }, { 'script': 'super' }],
+                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
                                     [{ 'align': [] }],
-                                    ['link', 'image'],
+                                    ['blockquote', 'code-block'],
+                                    ['link', 'image', 'video'],
                                     ['clean']
                                 ]
                             }}
@@ -254,9 +256,11 @@ export default function BlogForm() {
                                 'header', 'font', 'size',
                                 'bold', 'italic', 'underline', 'strike',
                                 'color', 'background',
-                                'list', 'bullet',
+                                'script',
+                                'list', 'bullet', 'indent',
                                 'align',
-                                'link', 'image'
+                                'blockquote', 'code-block',
+                                'link', 'image', 'video'
                             ]}
                             className="bg-white rounded-lg"
                             style={{ height: '300px', marginBottom: '50px' }}

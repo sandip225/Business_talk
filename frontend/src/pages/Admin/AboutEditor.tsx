@@ -235,7 +235,7 @@ export default function AboutEditor() {
                                                     modules={{
                                                         toolbar: [
                                                             [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                                                            [{ 'font': [] }],
+                                                            [{ 'font': ['serif', 'sans-serif', 'monospace', 'arial', 'times-new-roman', 'georgia', 'verdana', 'courier'] }],
                                                             [{ 'size': ['small', false, 'large', 'huge'] }],
                                                             ['bold', 'italic', 'underline', 'strike'],
                                                             [{ 'color': [] }, { 'background': [] }],

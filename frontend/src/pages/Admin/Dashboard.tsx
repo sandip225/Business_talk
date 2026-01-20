@@ -34,6 +34,8 @@ import {
 } from 'lucide-react';
 import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, renderAPI, systemHealthAPI, settingsAPI, SiteSettings, mongoAPI } from '../../services/api';
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about' | 'settings' | 'calendar';
 
@@ -89,6 +91,8 @@ export default function AdminDashboard() {
     // MongoDB Atlas Cluster State
     const [mongoCluster, setMongoCluster] = useState<{ name: string; mongoDBVersion: string; stateName: string; providerSettings?: { regionName: string } } | null>(null);
     const [mongoLoading, setMongoLoading] = useState(false);
+    const [mongoError, setMongoError] = useState<string | null>(null);
+
 
 
     // Set page title
@@ -216,13 +220,22 @@ export default function AdminDashboard() {
     // Fetch MongoDB Atlas cluster status
     const fetchMongoCluster = async () => {
         setMongoLoading(true);
+        setMongoError(null);
         try {
             const response = await mongoAPI.getClusters();
+            console.log('[Dashboard] MongoDB API response:', response.data);
             if (response.data?.results && response.data.results.length > 0) {
                 setMongoCluster(response.data.results[0]);
+            } else {
+                setMongoError('No clusters found in the response');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching MongoDB cluster:', error);
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Failed to fetch cluster status';
+            setMongoError(errorMessage);
         } finally {
             setMongoLoading(false);
         }
@@ -1301,22 +1314,55 @@ export default function AdminDashboard() {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Paragraphs
                                     </label>
-                                    <div className="space-y-4">
+                                    <div className="space-y-6">
                                         {aboutContent.paragraphs.map((paragraph, index) => (
-                                            <div key={index} className="flex gap-3">
-                                                <textarea
-                                                    value={paragraph}
-                                                    onChange={(e) => handleUpdateParagraph(index, e.target.value)}
-                                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent min-h-[100px]"
-                                                    placeholder={`Paragraph ${index + 1}`}
-                                                />
-                                                <button
-                                                    onClick={() => handleRemoveParagraph(index)}
-                                                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    disabled={aboutContent.paragraphs.length <= 1}
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
+                                            <div key={index} className="relative">
+                                                <div className="flex items-start gap-2">
+                                                    <span className="text-xs text-gray-500 mt-3 w-6">{index + 1}.</span>
+                                                    <div className="flex-1">
+                                                        <ReactQuill
+                                                            theme="snow"
+                                                            value={paragraph}
+                                                            onChange={(value: string) => handleUpdateParagraph(index, value)}
+                                                            modules={{
+                                                                toolbar: [
+                                                                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                                                    [{ 'font': ['serif', 'sans-serif', 'monospace', 'arial', 'times-new-roman', 'georgia', 'verdana', 'courier'] }],
+                                                                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                                                                    ['bold', 'italic', 'underline', 'strike'],
+                                                                    [{ 'color': [] }, { 'background': [] }],
+                                                                    [{ 'script': 'sub' }, { 'script': 'super' }],
+                                                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                                                                    [{ 'align': [] }],
+                                                                    ['blockquote', 'code-block'],
+                                                                    ['link', 'image', 'video'],
+                                                                    ['clean']
+                                                                ]
+                                                            }}
+                                                            formats={[
+                                                                'header', 'font', 'size',
+                                                                'bold', 'italic', 'underline', 'strike',
+                                                                'color', 'background',
+                                                                'script',
+                                                                'list', 'bullet', 'indent',
+                                                                'align',
+                                                                'blockquote', 'code-block',
+                                                                'link', 'image', 'video'
+                                                            ]}
+                                                            className="bg-white rounded-lg"
+                                                            placeholder={`Enter paragraph ${index + 1}...`}
+                                                        />
+                                                    </div>
+                                                    {aboutContent.paragraphs.length > 1 && (
+                                                        <button
+                                                            onClick={() => handleRemoveParagraph(index)}
+                                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors mt-1"
+                                                            title="Remove paragraph"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -1469,8 +1515,17 @@ export default function AdminDashboard() {
                             ) : (
                                 <div className="text-center py-8 text-gray-500">
                                     <Database className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                    <p>MongoDB Atlas credentials not configured or cluster unavailable.</p>
-                                    <p className="text-sm mt-1">Configure MONGO_PUBLIC_KEY, MONGO_PRIVATE_KEY, and MONGO_PROJECT_ID in backend environment.</p>
+                                    {mongoError ? (
+                                        <>
+                                            <p className="text-red-600 font-medium">Error: {mongoError}</p>
+                                            <p className="text-sm mt-2">Check browser console and backend logs for more details.</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p>MongoDB Atlas credentials not configured or cluster unavailable.</p>
+                                            <p className="text-sm mt-1">Configure MONGO_PUBLIC_KEY, MONGO_PRIVATE_KEY, and MONGO_PROJECT_ID in backend environment.</p>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </motion.div>
