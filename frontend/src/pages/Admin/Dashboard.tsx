@@ -36,6 +36,7 @@ import { podcastAPI, blogAPI, Blog, importAPI, aboutUsAPI, AboutUsContent, rende
 import { useAuthStore, usePodcastStore } from '../../store/useStore';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import AnalyticsDashboard from '../../components/AnalyticsDashboard';
 
 type ActiveTab = 'podcasts' | 'blogs' | 'import' | 'about' | 'settings' | 'calendar';
 
@@ -1687,6 +1688,9 @@ export default function AdminDashboard() {
                                 </p>
                             </div>
                         </motion.div>
+
+                        {/* Analytics Dashboard - Shows analytics data */}
+                        <AnalyticsDashboard measurementId={episodeSettings.googleAnalyticsId} />
 
                         {/* MongoDB Configuration */}
 

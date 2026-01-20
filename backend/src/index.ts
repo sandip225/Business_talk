@@ -16,6 +16,7 @@ import aboutUsRoutes from './routes/aboutus.routes';
 import renderRoutes from './routes/render.routes';
 import mongoRoutes from './routes/mongodb.routes';
 import settingsRoutes from './routes/settings.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 const app = express();
 
@@ -150,6 +151,7 @@ app.use('/api/about', aboutUsRoutes); // Changed '/api/aboutus' to '/api/about' 
 app.use('/api/render', renderRoutes);
 app.use('/api/mongodb', mongoRoutes); // Added mongodb routes
 app.use('/api/settings', settingsRoutes); // Site settings routes
+app.use('/api/analytics', analyticsRoutes); // Analytics routes
 
 // 404 handler
 app.use((_req, res) => {

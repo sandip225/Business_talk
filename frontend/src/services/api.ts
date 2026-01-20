@@ -299,5 +299,16 @@ export const settingsAPI = {
     update: (settings: Partial<SiteSettings>) => api.put<{ message: string; settings: SiteSettings }>('/settings', settings),
 };
 
+// Analytics API
+export interface AnalyticsConfig {
+    configured: boolean;
+    measurementId?: string;
+    propertyId?: string;
+}
+
+export const analyticsAPI = {
+    getConfig: () => api.get<AnalyticsConfig>('/analytics/config'),
+};
+
 export default api;
 
