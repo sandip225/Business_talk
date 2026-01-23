@@ -86,9 +86,12 @@ export default function AboutUs() {
                         ) : (
                             <div className="space-y-6">
                                 {content.paragraphs.map((paragraph, index) => (
-                                    <p key={index} className="text-gray-700 text-base text-justify" style={{ lineHeight: '1.75rem' }}>
-                                        {paragraph}
-                                    </p>
+                                    <div
+                                        key={index}
+                                        className="text-gray-700 text-base text-justify prose prose-sm max-w-none"
+                                        style={{ lineHeight: '1.75rem' }}
+                                        dangerouslySetInnerHTML={{ __html: paragraph }}
+                                    />
                                 ))}
                             </div>
                         )}
