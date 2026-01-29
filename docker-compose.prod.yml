@@ -51,8 +51,7 @@ services:
     networks:
       - business-talk-network
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
     deploy:
       resources:
         limits:
