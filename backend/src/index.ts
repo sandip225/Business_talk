@@ -29,41 +29,10 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
-// CORS - Allow frontend and all Render deployments
+// CORS - Allow all origins for production
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-
-        // Allow localhost for development
-        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            return callback(null, true);
-        }
-
-        // Allow Render.com deployments
-        if (origin.includes('.onrender.com')) {
-            return callback(null, true);
-        }
-
-        // Allow configured frontend URL
-        if (origin === config.cors.frontendUrl) {
-            return callback(null, true);
-        }
-
-        // Allow custom domains
-        if (origin.includes('businesstalkabcdeepalabhatt.com') ||
-            origin.includes('businesstalkwithdeepakbhatt.com')) {
-            return callback(null, true);
-        }
-
-        // Allow Netlify and Vercel deployments
-        if (origin.includes('.netlify.app') || origin.includes('.vercel.app')) {
-            return callback(null, true);
-        }
-
-        callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
+    origin: '*',
+    credentials: false,
 }));
 
 // Rate limiting
